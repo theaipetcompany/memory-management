@@ -9,6 +9,7 @@ import { Image } from '@/components/image-table';
 
 export default function Home() {
   const [images, setImages] = useState<Image[]>([]);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchImages = async () => {
@@ -64,11 +65,23 @@ export default function Home() {
 
       if (response.ok) {
         await fetchImages(); // Refresh the images list
+        // Remove from selected images if it was selected
+        setSelectedImages((prev) => prev.filter((imgId) => imgId !== id));
       }
     } catch (error) {
       console.error('Error deleting image:', error);
     }
   };
+
+  const handleImageSelect = (imageId: string, selected: boolean) => {
+    setSelectedImages((prev) =>
+      selected ? [...prev, imageId] : prev.filter((id) => id !== imageId)
+    );
+  };
+
+  const selectedImagesData = images.filter((img) =>
+    selectedImages.includes(img.id)
+  );
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-start p-8 md:p-24 bg-white dark:bg-slate-900">
@@ -84,7 +97,7 @@ export default function Home() {
       <div className="w-full max-w-4xl">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-slate-800 dark:text-white">
-            Images ({images.length})
+            Images ({images.length}) - Selected: {selectedImages.length}
           </h2>
           <AddImageModal onAddImage={handleAddImage} />
         </div>
@@ -95,9 +108,14 @@ export default function Home() {
           </div>
         ) : (
           <>
-            <ImageTable images={images} onDeleteImage={handleDeleteImage} />
+            <ImageTable
+              images={images}
+              onDeleteImage={handleDeleteImage}
+              selectedImages={selectedImages}
+              onImageSelect={handleImageSelect}
+            />
             <div className="mt-6">
-              <SubmitButton images={images} />
+              <SubmitButton images={selectedImagesData} />
             </div>
           </>
         )}

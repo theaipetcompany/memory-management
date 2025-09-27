@@ -24,9 +24,16 @@ export interface Image {
 interface ImageTableProps {
   images: Image[];
   onDeleteImage: (id: string) => void;
+  selectedImages?: string[];
+  onImageSelect?: (imageId: string, selected: boolean) => void;
 }
 
-export function ImageTable({ images, onDeleteImage }: ImageTableProps) {
+export function ImageTable({
+  images,
+  onDeleteImage,
+  selectedImages = [],
+  onImageSelect,
+}: ImageTableProps) {
   if (images.length === 0) {
     return (
       <div className="text-center py-8">
@@ -58,6 +65,9 @@ export function ImageTable({ images, onDeleteImage }: ImageTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
+            {onImageSelect && (
+              <TableHead className="w-[50px]">Select</TableHead>
+            )}
             <TableHead>Preview</TableHead>
             <TableHead>Filename</TableHead>
             <TableHead>Annotation</TableHead>
@@ -69,6 +79,16 @@ export function ImageTable({ images, onDeleteImage }: ImageTableProps) {
         <TableBody>
           {images.map((image) => (
             <TableRow key={image.id}>
+              {onImageSelect && (
+                <TableCell>
+                  <input
+                    type="checkbox"
+                    checked={selectedImages.includes(image.id)}
+                    onChange={(e) => onImageSelect(image.id, e.target.checked)}
+                    className="rounded border-gray-300"
+                  />
+                </TableCell>
+              )}
               <TableCell>
                 <div className="w-16 h-16 relative">
                   <Image

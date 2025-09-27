@@ -1,8 +1,9 @@
-import { writeFile, mkdir, unlink } from 'fs/promises';
+import { writeFile, mkdir, unlink, readdir, rm } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
 const UPLOAD_DIR = join(process.cwd(), 'uploads');
+const TEMP_DIR = join(process.cwd(), 'temp');
 
 export interface StoredFile {
   filePath: string;
@@ -45,4 +46,41 @@ export async function deleteFile(filePath: string): Promise<void> {
 
 export function getFileUrl(filename: string): string {
   return `/uploads/${filename}`;
+}
+
+export async function ensureTempDir(): Promise<void> {
+  if (!existsSync(TEMP_DIR)) {
+    await mkdir(TEMP_DIR, { recursive: true });
+  }
+}
+
+export async function createTempJobFolder(jobId: string): Promise<string> {
+  await ensureTempDir();
+  const jobDir = join(TEMP_DIR, jobId);
+  await mkdir(jobDir, { recursive: true });
+  return jobDir;
+}
+
+export async function copyFileToTemp(
+  sourcePath: string,
+  tempDir: string,
+  filename: string
+): Promise<string> {
+  const tempFilePath = join(tempDir, filename);
+  const sourceBuffer = await import('fs').then((fs) =>
+    fs.promises.readFile(sourcePath)
+  );
+  await writeFile(tempFilePath, sourceBuffer);
+  return tempFilePath;
+}
+
+export async function cleanupTempJobFolder(jobId: string): Promise<void> {
+  try {
+    const jobDir = join(TEMP_DIR, jobId);
+    if (existsSync(jobDir)) {
+      await rm(jobDir, { recursive: true, force: true });
+    }
+  } catch (error) {
+    console.error('Error cleaning up temp folder:', error);
+  }
 }
