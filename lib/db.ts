@@ -1,8 +1,8 @@
-import { PrismaClient } from './generated/prisma/client'
+import { PrismaClient } from './prisma/client';
 
 export type GetDbParams = {
-  connectionString: string
-}
+  connectionString: string;
+};
 
 export function getDb({ connectionString }: GetDbParams) {
   const prisma = new PrismaClient({
@@ -11,10 +11,10 @@ export function getDb({ connectionString }: GetDbParams) {
         url: connectionString,
       },
     },
-  })
+  });
 
-  return prisma
+  return prisma;
 }
 
-const prisma = new PrismaClient()
-export default prisma
+const prisma = new PrismaClient();
+export default prisma;

@@ -1,1 +1,1 @@
-export * from './generated/prisma/enums'
+export * from './prisma/enums';
