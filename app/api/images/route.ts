@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { storeFile } from '@/lib/file-storage';
 
 export async function GET() {
   try {
@@ -30,12 +31,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For now, we'll just store the filename and annotation
-    // In a real implementation, you'd want to upload the file to a storage service
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      return NextResponse.json(
+        { error: 'File must be an image' },
+        { status: 400 }
+      );
+    }
+
+    // Validate file size (10MB max)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        { error: 'File size must be less than 10MB' },
+        { status: 400 }
+      );
+    }
+
+    // Generate unique filename
+    const timestamp = Date.now();
+    const extension = file.name.split('.').pop();
+    const filename = `${timestamp}-${file.name}`;
+
+    // Store the file
+    const storedFile = await storeFile(file, filename);
+
+    // Create database record
     const image = await db.image.create({
       data: {
         filename: file.name,
         annotation: annotation.trim(),
+        filePath: storedFile.filePath,
+        fileSize: storedFile.fileSize,
+        mimeType: storedFile.mimeType,
       },
     });
 

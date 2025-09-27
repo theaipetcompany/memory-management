@@ -42,6 +42,9 @@ export const ImageScalarFieldEnum = {
   id: 'id',
   filename: 'filename',
   annotation: 'annotation',
+  filePath: 'filePath',
+  fileSize: 'fileSize',
+  mimeType: 'mimeType',
   createdAt: 'createdAt'
 } as const
 

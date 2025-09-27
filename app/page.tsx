@@ -5,12 +5,7 @@ import { ImageTable } from '@/components/image-table';
 import { AddImageModal } from '@/components/add-image-modal';
 import { SubmitButton } from '@/components/submit-button';
 
-interface Image {
-  id: string;
-  filename: string;
-  annotation: string;
-  createdAt: Date;
-}
+import { Image } from '@/components/image-table';
 
 export default function Home() {
   const [images, setImages] = useState<Image[]>([]);

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import db from '@/lib/db';
+import { generateJSONL, validateJSONL } from '@/lib/jsonl-generator';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -18,25 +19,70 @@ export async function POST() {
       );
     }
 
-    // For now, we'll create a mock fine-tuning job
-    // In a real implementation, you would:
-    // 1. Upload images to OpenAI Files API
-    // 2. Create a fine-tuning job
-    // 3. Store the job ID in the database
+    // Generate JSONL training data
+    const jsonlData = await generateJSONL(images);
 
-    const mockJobId = `ftjob-${Date.now()}`;
+    // Validate the JSONL data
+    const validation = validateJSONL(jsonlData);
+    if (!validation.valid) {
+      return NextResponse.json(
+        {
+          error: 'Invalid training data format',
+          details: validation.errors,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Create a file in OpenAI's format
+    const file = await openai.files.create({
+      file: new File([jsonlData], 'training-data.jsonl', {
+        type: 'application/json',
+      }),
+      purpose: 'fine-tune',
+    });
+
+    // Create the fine-tuning job
+    const fineTuningJob = await openai.fineTuning.jobs.create({
+      training_file: file.id,
+      model: 'gpt-4o-2024-08-06', // Vision model for fine-tuning
+    });
 
     // Create job record in database
     const job = await db.job.create({
       data: {
         status: 'pending',
-        openaiJobId: mockJobId,
+        openaiJobId: fineTuningJob.id,
       },
     });
 
-    return NextResponse.json(job, { status: 201 });
+    return NextResponse.json(
+      {
+        ...job,
+        openaiFileId: file.id,
+        trainingDataSize: images.length,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Error submitting to OpenAI:', error);
+
+    // Handle specific OpenAI errors
+    if (error instanceof Error) {
+      if (error.message.includes('API key')) {
+        return NextResponse.json(
+          { error: 'OpenAI API key not configured' },
+          { status: 500 }
+        );
+      }
+      if (error.message.includes('quota')) {
+        return NextResponse.json(
+          { error: 'OpenAI API quota exceeded' },
+          { status: 429 }
+        );
+      }
+    }
+
     return NextResponse.json(
       { error: 'Failed to submit to OpenAI' },
       { status: 500 }

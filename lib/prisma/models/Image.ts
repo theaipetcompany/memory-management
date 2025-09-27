@@ -19,14 +19,27 @@ export type ImageModel = runtime.Types.Result.DefaultSelection<Prisma.$ImagePayl
 
 export type AggregateImage = {
   _count: ImageCountAggregateOutputType | null
+  _avg: ImageAvgAggregateOutputType | null
+  _sum: ImageSumAggregateOutputType | null
   _min: ImageMinAggregateOutputType | null
   _max: ImageMaxAggregateOutputType | null
+}
+
+export type ImageAvgAggregateOutputType = {
+  fileSize: number | null
+}
+
+export type ImageSumAggregateOutputType = {
+  fileSize: number | null
 }
 
 export type ImageMinAggregateOutputType = {
   id: string | null
   filename: string | null
   annotation: string | null
+  filePath: string | null
+  fileSize: number | null
+  mimeType: string | null
   createdAt: Date | null
 }
 
@@ -34,6 +47,9 @@ export type ImageMaxAggregateOutputType = {
   id: string | null
   filename: string | null
   annotation: string | null
+  filePath: string | null
+  fileSize: number | null
+  mimeType: string | null
   createdAt: Date | null
 }
 
@@ -41,15 +57,29 @@ export type ImageCountAggregateOutputType = {
   id: number
   filename: number
   annotation: number
+  filePath: number
+  fileSize: number
+  mimeType: number
   createdAt: number
   _all: number
 }
 
 
+export type ImageAvgAggregateInputType = {
+  fileSize?: true
+}
+
+export type ImageSumAggregateInputType = {
+  fileSize?: true
+}
+
 export type ImageMinAggregateInputType = {
   id?: true
   filename?: true
   annotation?: true
+  filePath?: true
+  fileSize?: true
+  mimeType?: true
   createdAt?: true
 }
 
@@ -57,6 +87,9 @@ export type ImageMaxAggregateInputType = {
   id?: true
   filename?: true
   annotation?: true
+  filePath?: true
+  fileSize?: true
+  mimeType?: true
   createdAt?: true
 }
 
@@ -64,6 +97,9 @@ export type ImageCountAggregateInputType = {
   id?: true
   filename?: true
   annotation?: true
+  filePath?: true
+  fileSize?: true
+  mimeType?: true
   createdAt?: true
   _all?: true
 }
@@ -106,6 +142,18 @@ export type ImageAggregateArgs<ExtArgs extends runtime.Types.Extensions.Internal
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: ImageAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: ImageSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: ImageMinAggregateInputType
@@ -136,6 +184,8 @@ export type ImageGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   _count?: ImageCountAggregateInputType | true
+  _avg?: ImageAvgAggregateInputType
+  _sum?: ImageSumAggregateInputType
   _min?: ImageMinAggregateInputType
   _max?: ImageMaxAggregateInputType
 }
@@ -144,8 +194,13 @@ export type ImageGroupByOutputType = {
   id: string
   filename: string
   annotation: string
+  filePath: string
+  fileSize: number
+  mimeType: string
   createdAt: Date
   _count: ImageCountAggregateOutputType | null
+  _avg: ImageAvgAggregateOutputType | null
+  _sum: ImageSumAggregateOutputType | null
   _min: ImageMinAggregateOutputType | null
   _max: ImageMaxAggregateOutputType | null
 }
@@ -172,6 +227,9 @@ export type ImageWhereInput = {
   id?: Prisma.StringFilter<"Image"> | string
   filename?: Prisma.StringFilter<"Image"> | string
   annotation?: Prisma.StringFilter<"Image"> | string
+  filePath?: Prisma.StringFilter<"Image"> | string
+  fileSize?: Prisma.IntFilter<"Image"> | number
+  mimeType?: Prisma.StringFilter<"Image"> | string
   createdAt?: Prisma.DateTimeFilter<"Image"> | Date | string
 }
 
@@ -179,6 +237,9 @@ export type ImageOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   filename?: Prisma.SortOrder
   annotation?: Prisma.SortOrder
+  filePath?: Prisma.SortOrder
+  fileSize?: Prisma.SortOrder
+  mimeType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -189,6 +250,9 @@ export type ImageWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ImageWhereInput | Prisma.ImageWhereInput[]
   filename?: Prisma.StringFilter<"Image"> | string
   annotation?: Prisma.StringFilter<"Image"> | string
+  filePath?: Prisma.StringFilter<"Image"> | string
+  fileSize?: Prisma.IntFilter<"Image"> | number
+  mimeType?: Prisma.StringFilter<"Image"> | string
   createdAt?: Prisma.DateTimeFilter<"Image"> | Date | string
 }, "id">
 
@@ -196,10 +260,15 @@ export type ImageOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   filename?: Prisma.SortOrder
   annotation?: Prisma.SortOrder
+  filePath?: Prisma.SortOrder
+  fileSize?: Prisma.SortOrder
+  mimeType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ImageCountOrderByAggregateInput
+  _avg?: Prisma.ImageAvgOrderByAggregateInput
   _max?: Prisma.ImageMaxOrderByAggregateInput
   _min?: Prisma.ImageMinOrderByAggregateInput
+  _sum?: Prisma.ImageSumOrderByAggregateInput
 }
 
 export type ImageScalarWhereWithAggregatesInput = {
@@ -209,6 +278,9 @@ export type ImageScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Image"> | string
   filename?: Prisma.StringWithAggregatesFilter<"Image"> | string
   annotation?: Prisma.StringWithAggregatesFilter<"Image"> | string
+  filePath?: Prisma.StringWithAggregatesFilter<"Image"> | string
+  fileSize?: Prisma.IntWithAggregatesFilter<"Image"> | number
+  mimeType?: Prisma.StringWithAggregatesFilter<"Image"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Image"> | Date | string
 }
 
@@ -216,6 +288,9 @@ export type ImageCreateInput = {
   id?: string
   filename: string
   annotation: string
+  filePath: string
+  fileSize: number
+  mimeType: string
   createdAt?: Date | string
 }
 
@@ -223,6 +298,9 @@ export type ImageUncheckedCreateInput = {
   id?: string
   filename: string
   annotation: string
+  filePath: string
+  fileSize: number
+  mimeType: string
   createdAt?: Date | string
 }
 
@@ -230,6 +308,9 @@ export type ImageUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   filename?: Prisma.StringFieldUpdateOperationsInput | string
   annotation?: Prisma.StringFieldUpdateOperationsInput | string
+  filePath?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSize?: Prisma.IntFieldUpdateOperationsInput | number
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -237,6 +318,9 @@ export type ImageUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   filename?: Prisma.StringFieldUpdateOperationsInput | string
   annotation?: Prisma.StringFieldUpdateOperationsInput | string
+  filePath?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSize?: Prisma.IntFieldUpdateOperationsInput | number
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -244,6 +328,9 @@ export type ImageCreateManyInput = {
   id?: string
   filename: string
   annotation: string
+  filePath: string
+  fileSize: number
+  mimeType: string
   createdAt?: Date | string
 }
 
@@ -251,6 +338,9 @@ export type ImageUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   filename?: Prisma.StringFieldUpdateOperationsInput | string
   annotation?: Prisma.StringFieldUpdateOperationsInput | string
+  filePath?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSize?: Prisma.IntFieldUpdateOperationsInput | number
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -258,6 +348,9 @@ export type ImageUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   filename?: Prisma.StringFieldUpdateOperationsInput | string
   annotation?: Prisma.StringFieldUpdateOperationsInput | string
+  filePath?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSize?: Prisma.IntFieldUpdateOperationsInput | number
+  mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -265,13 +358,23 @@ export type ImageCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   filename?: Prisma.SortOrder
   annotation?: Prisma.SortOrder
+  filePath?: Prisma.SortOrder
+  fileSize?: Prisma.SortOrder
+  mimeType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type ImageAvgOrderByAggregateInput = {
+  fileSize?: Prisma.SortOrder
 }
 
 export type ImageMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   filename?: Prisma.SortOrder
   annotation?: Prisma.SortOrder
+  filePath?: Prisma.SortOrder
+  fileSize?: Prisma.SortOrder
+  mimeType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -279,11 +382,26 @@ export type ImageMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   filename?: Prisma.SortOrder
   annotation?: Prisma.SortOrder
+  filePath?: Prisma.SortOrder
+  fileSize?: Prisma.SortOrder
+  mimeType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type ImageSumOrderByAggregateInput = {
+  fileSize?: Prisma.SortOrder
 }
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
+}
+
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -296,6 +414,9 @@ export type ImageSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   id?: boolean
   filename?: boolean
   annotation?: boolean
+  filePath?: boolean
+  fileSize?: boolean
+  mimeType?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["image"]>
 
@@ -303,6 +424,9 @@ export type ImageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   id?: boolean
   filename?: boolean
   annotation?: boolean
+  filePath?: boolean
+  fileSize?: boolean
+  mimeType?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["image"]>
 
@@ -310,6 +434,9 @@ export type ImageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   id?: boolean
   filename?: boolean
   annotation?: boolean
+  filePath?: boolean
+  fileSize?: boolean
+  mimeType?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["image"]>
 
@@ -317,10 +444,13 @@ export type ImageSelectScalar = {
   id?: boolean
   filename?: boolean
   annotation?: boolean
+  filePath?: boolean
+  fileSize?: boolean
+  mimeType?: boolean
   createdAt?: boolean
 }
 
-export type ImageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "filename" | "annotation" | "createdAt", ExtArgs["result"]["image"]>
+export type ImageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "filename" | "annotation" | "filePath" | "fileSize" | "mimeType" | "createdAt", ExtArgs["result"]["image"]>
 
 export type $ImagePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Image"
@@ -329,6 +459,9 @@ export type $ImagePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     id: string
     filename: string
     annotation: string
+    filePath: string
+    fileSize: number
+    mimeType: string
     createdAt: Date
   }, ExtArgs["result"]["image"]>
   composites: {}
@@ -756,6 +889,9 @@ export interface ImageFieldRefs {
   readonly id: Prisma.FieldRef<"Image", 'String'>
   readonly filename: Prisma.FieldRef<"Image", 'String'>
   readonly annotation: Prisma.FieldRef<"Image", 'String'>
+  readonly filePath: Prisma.FieldRef<"Image", 'String'>
+  readonly fileSize: Prisma.FieldRef<"Image", 'Int'>
+  readonly mimeType: Prisma.FieldRef<"Image", 'String'>
   readonly createdAt: Prisma.FieldRef<"Image", 'DateTime'>
 }
     

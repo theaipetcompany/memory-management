@@ -6,12 +6,18 @@ const mockImages = [
     id: '1',
     filename: 'image1.jpg',
     annotation: 'A cat sitting on a chair',
+    filePath: '/uploads/image1.jpg',
+    fileSize: 1024000,
+    mimeType: 'image/jpeg',
     createdAt: new Date('2024-01-01'),
   },
   {
     id: '2',
     filename: 'image2.jpg',
     annotation: 'A dog playing in the park',
+    filePath: '/uploads/image2.jpg',
+    fileSize: 2048000,
+    mimeType: 'image/jpeg',
     createdAt: new Date('2024-01-02'),
   },
 ];

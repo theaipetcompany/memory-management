@@ -23,10 +23,11 @@
 
 2. **Image Table (`components/image-table.tsx`)**
 
-   - Displays images in table format
-   - Shows filename, annotation, and creation date
+   - Displays images in table format with preview thumbnails
+   - Shows filename, annotation, file size, and creation date
    - Delete functionality for individual images
    - Empty state handling
+   - Real image preview using Next.js Image component
 
 3. **Add Image Modal (`components/add-image-modal.tsx`)**
 
@@ -43,23 +44,34 @@
 
 5. **API Routes**
 
-   - `GET /api/images` - Fetch all images
-   - `POST /api/images` - Upload new image
-   - `DELETE /api/images/[id]` - Delete image
-   - `POST /api/jobs/submit` - Submit to OpenAI (mock implementation)
+   - `GET /api/images` - Fetch all images with real data
+   - `POST /api/images` - Upload new image with file storage
+   - `DELETE /api/images/[id]` - Delete image and file
+   - `GET /api/uploads/[filename]` - Serve uploaded images
+   - `POST /api/jobs/submit` - Submit to OpenAI with real API integration
+   - `GET /api/jobs` - Fetch job status
+   - `POST /api/jobs` - Create new job
 
 6. **Database Schema (`prisma/schema.prisma`)**
-   - Image model with id, filename, annotation, createdAt
+   - Image model with id, filename, annotation, filePath, fileSize, mimeType, createdAt
    - Job model with id, status, openaiJobId, createdAt
    - PostgreSQL provider configured
 
+7. **File Storage (`lib/file-storage.ts`)**
+   - Local file storage in uploads directory
+   - File validation and size limits
+   - File deletion utilities
+
+8. **JSONL Generation (`lib/jsonl-generator.ts`)**
+   - Converts images to OpenAI fine-tuning format
+   - Base64 encoding for images
+   - Validation of training data format
+
 #### 🔄 Current Limitations
 
-1. **File Storage**: Images are not actually stored, only metadata
-2. **OpenAI Integration**: Submit endpoint creates mock jobs only
-3. **Job Management**: No job status tracking or monitoring
-4. **Data Format**: No JSONL generation for OpenAI API
-5. **Image Processing**: No base64 encoding or URL generation
+1. **Job Management**: No real-time job status tracking or monitoring
+2. **Configuration Panel**: No model selection or training parameters UI
+3. **Data Validation**: Basic validation, could be more comprehensive
 
 ### Required OpenAI Vision Fine-tuning Features
 
@@ -107,21 +119,20 @@ Based on research, the following features are needed for complete OpenAI vision 
 
 1. **High Priority**
 
-   - Implement actual file storage
-   - Add image preview in table
-   - Create JSONL generation logic
-   - Integrate real OpenAI API calls
+   - Add job status monitoring and real-time updates
+   - Implement configuration panel for model selection
+   - Add comprehensive data validation
 
 2. **Medium Priority**
 
-   - Add job status monitoring
-   - Implement configuration panel
-   - Add data validation
+   - Add batch operations for images
+   - Implement export/import functionality
+   - Add advanced monitoring dashboard
 
 3. **Low Priority**
-   - Advanced monitoring dashboard
-   - Batch operations
-   - Export/import functionality
+   - Performance optimizations
+   - Advanced error handling
+   - User authentication and authorization
 
 ### Technical Debt
 

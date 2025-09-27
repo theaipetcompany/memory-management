@@ -9,11 +9,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import Image from 'next/image';
 
 export interface Image {
   id: string;
   filename: string;
   annotation: string;
+  filePath: string;
+  fileSize: number;
+  mimeType: string;
   createdAt: Date;
 }
 
@@ -31,13 +35,28 @@ export function ImageTable({ images, onDeleteImage }: ImageTableProps) {
     );
   }
 
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getImageUrl = (filePath: string): string => {
+    const filename = filePath.split('/').pop();
+    return `/uploads/${filename}`;
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Preview</TableHead>
             <TableHead>Filename</TableHead>
             <TableHead>Annotation</TableHead>
+            <TableHead>Size</TableHead>
             <TableHead>Date</TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
@@ -45,8 +64,20 @@ export function ImageTable({ images, onDeleteImage }: ImageTableProps) {
         <TableBody>
           {images.map((image) => (
             <TableRow key={image.id}>
+              <TableCell>
+                <div className="w-16 h-16 relative">
+                  <Image
+                    src={getImageUrl(image.filePath)}
+                    alt={image.filename}
+                    fill
+                    className="object-cover rounded"
+                    sizes="64px"
+                  />
+                </div>
+              </TableCell>
               <TableCell className="font-medium">{image.filename}</TableCell>
               <TableCell>{image.annotation}</TableCell>
+              <TableCell>{formatFileSize(image.fileSize)}</TableCell>
               <TableCell>{image.createdAt.toLocaleDateString()}</TableCell>
               <TableCell>
                 <Button

@@ -12,6 +12,9 @@ model Image {
   id         String   @id @default(cuid())
   filename   String
   annotation String
+  filePath   String   // Path to stored file
+  fileSize   Int      // File size in bytes
+  mimeType   String   // MIME type of the file
   createdAt  DateTime @default(now())
 }
 
