@@ -18,7 +18,7 @@ export interface Image {
   filePath: string;
   fileSize: number;
   mimeType: string;
-  createdAt: Date;
+  createdAt: Date | string;
 }
 
 interface ImageTableProps {
@@ -41,6 +41,11 @@ export function ImageTable({ images, onDeleteImage }: ImageTableProps) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const formatDate = (date: Date | string): string => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString();
   };
 
   const getImageUrl = (filePath: string): string => {
@@ -78,7 +83,7 @@ export function ImageTable({ images, onDeleteImage }: ImageTableProps) {
               <TableCell className="font-medium">{image.filename}</TableCell>
               <TableCell>{image.annotation}</TableCell>
               <TableCell>{formatFileSize(image.fileSize)}</TableCell>
-              <TableCell>{image.createdAt.toLocaleDateString()}</TableCell>
+              <TableCell>{formatDate(image.createdAt)}</TableCell>
               <TableCell>
                 <Button
                   variant="destructive"

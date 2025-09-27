@@ -2,13 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-
-interface Image {
-  id: string;
-  filename: string;
-  annotation: string;
-  createdAt: Date;
-}
+import { Image } from '@/components/image-table';
 
 interface SubmitButtonProps {
   images: Image[];
