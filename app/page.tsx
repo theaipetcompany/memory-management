@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ImageTable } from '@/components/image-table';
 import { AddImageModal } from '@/components/add-image-modal';
+import { SubmitButton } from '@/components/submit-button';
 
 interface Image {
   id: string;
@@ -98,7 +99,12 @@ export default function Home() {
             Loading images...
           </div>
         ) : (
-          <ImageTable images={images} onDeleteImage={handleDeleteImage} />
+          <>
+            <ImageTable images={images} onDeleteImage={handleDeleteImage} />
+            <div className="mt-6">
+              <SubmitButton images={images} />
+            </div>
+          </>
         )}
       </div>
     </main>

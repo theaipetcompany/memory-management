@@ -1,0 +1,111 @@
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { SubmitButton } from './submit-button';
+
+// Mock fetch
+global.fetch = jest.fn();
+
+const mockImages = [
+  {
+    id: '1',
+    filename: 'test1.jpg',
+    annotation: 'A cat sitting',
+    createdAt: new Date(),
+  },
+  {
+    id: '2',
+    filename: 'test2.jpg',
+    annotation: 'A dog running',
+    createdAt: new Date(),
+  },
+];
+
+describe('SubmitButton', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('should render submit button', () => {
+    render(<SubmitButton images={mockImages} />);
+
+    expect(screen.getByText('Submit to OpenAI')).toBeInTheDocument();
+  });
+
+  test('should be disabled when no images', () => {
+    render(<SubmitButton images={[]} />);
+
+    const button = screen.getByText('Submit to OpenAI');
+    expect(button).toBeDisabled();
+  });
+
+  test('should be enabled when images exist', () => {
+    render(<SubmitButton images={mockImages} />);
+
+    const button = screen.getByText('Submit to OpenAI');
+    expect(button).toBeEnabled();
+  });
+
+  test('should submit images to OpenAI', async () => {
+    const mockJob = {
+      id: 'job-123',
+      status: 'pending',
+      openaiJobId: 'ftjob-abc123',
+      createdAt: new Date(),
+    };
+
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(mockJob),
+    });
+
+    render(<SubmitButton images={mockImages} />);
+
+    const button = screen.getByText('Submit to OpenAI');
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith('/api/jobs/submit', {
+        method: 'POST',
+      });
+    });
+  });
+
+  test('should show loading state during submission', async () => {
+    (fetch as jest.Mock).mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                ok: true,
+                json: () => Promise.resolve({}),
+              }),
+            100
+          )
+        )
+    );
+
+    render(<SubmitButton images={mockImages} />);
+
+    const button = screen.getByText('Submit to OpenAI');
+    fireEvent.click(button);
+
+    expect(screen.getByText('Submitting...')).toBeInTheDocument();
+    expect(button).toBeDisabled();
+  });
+
+  test('should handle submission error', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      json: () => Promise.resolve({ error: 'Submission failed' }),
+    });
+
+    render(<SubmitButton images={mockImages} />);
+
+    const button = screen.getByText('Submit to OpenAI');
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText('Error: Submission failed')).toBeInTheDocument();
+    });
+  });
+});

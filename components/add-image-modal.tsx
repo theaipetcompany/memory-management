@@ -20,24 +20,61 @@ export function AddImageModal({ onAddImage }: AddImageModalProps) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [annotation, setAnnotation] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const validateFile = (file: File): boolean => {
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return false;
+    }
+    return true;
+  };
+
+  const validateAnnotation = (annotation: string): boolean => {
+    if (!annotation.trim()) {
+      setError('Annotation is required');
+      return false;
+    }
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
-    if (file && annotation.trim()) {
+    if (!file || !validateFile(file)) return;
+    if (!validateAnnotation(annotation)) return;
+
+    setIsSubmitting(true);
+    try {
       await onAddImage({ file, annotation: annotation.trim() });
       setFile(null);
       setAnnotation('');
       setOpen(false);
+    } catch (err) {
+      setError(`Upload failed. Please try again`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleSubmitClick = async () => {
-    if (file && annotation.trim()) {
+    setError(null);
+
+    if (!file || !validateFile(file)) return;
+    if (!validateAnnotation(annotation)) return;
+
+    setIsSubmitting(true);
+    try {
       await onAddImage({ file, annotation: annotation.trim() });
       setFile(null);
       setAnnotation('');
       setOpen(false);
+    } catch (err) {
+      setError(`Upload failed. Please try again`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -45,7 +82,18 @@ export function AddImageModal({ onAddImage }: AddImageModalProps) {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
+      setError(null);
     }
+  };
+
+  const handleAnnotationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAnnotation(e.target.value);
+    setError(null);
+  };
+
+  const handleRetry = () => {
+    setError(null);
+    handleSubmitClick();
   };
 
   return (
@@ -75,21 +123,44 @@ export function AddImageModal({ onAddImage }: AddImageModalProps) {
               id="annotation"
               name="annotation"
               value={annotation}
-              onChange={(e) => setAnnotation(e.target.value)}
+              onChange={handleAnnotationChange}
               placeholder="Describe the image..."
               required
             />
           </div>
+
+          {error && (
+            <div className="text-red-500 text-sm">
+              {error}
+              {error.includes('Upload failed') && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRetry}
+                  className="ml-2"
+                >
+                  Retry
+                </Button>
+              )}
+            </div>
+          )}
+
           <div className="flex justify-end space-x-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit" onClick={handleSubmitClick}>
-              Add
+            <Button
+              type="submit"
+              onClick={handleSubmitClick}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Adding...' : 'Add'}
             </Button>
           </div>
         </form>
