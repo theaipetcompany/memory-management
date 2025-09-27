@@ -39,3 +39,4 @@ package-lock.json
 
 # generated Prisma client
 lib/prisma/
+/uploads/*
