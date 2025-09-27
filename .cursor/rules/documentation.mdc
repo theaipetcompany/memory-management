@@ -1,0 +1,84 @@
+---
+description: Update README.md whenever project has new git commit
+alwaysApply: true
+---
+
+# Documentation Update Policy
+
+## Hard Rules
+
+- ALWAYS update documentation after significant code changes
+- Review ALL documentation files when core functionality changes
+- Update README.md to reflect current implementation state
+- Remove outdated information immediately when discovered
+- Keep documentation synchronized with codebase reality
+
+## Triggers
+
+- After implementing new features or major changes
+- When modifying core architecture or workflows
+- After adding/removing dependencies or services
+- When deployment procedures change
+- After updating API endpoints or data models
+- When git commits introduce breaking changes
+
+## Documentation Update Procedure
+
+1. **Identify Impact Scope**: Determine which docs need updates based on changes made
+2. **Review Current State**: Read existing documentation to understand current content
+3. **Analyze Recent Changes**: Review git history and modified files to understand what changed
+4. **Update Core Files**: Prioritize README.md, then /docs directory files
+5. **Verify Accuracy**: Ensure all instructions and examples still work
+6. **Remove Obsolete Content**: Delete outdated sections and broken references
+
+## Documentation Hierarchy (update in order)
+
+1. **README.md** - Main project overview and quick start
+2. **docs/architecture.md** - System design and component relationships  
+3. **docs/requirements.md** - Project goals and specifications
+4. **docs/active-context.md** - Current development focus
+5. **API documentation** - Endpoint specs and examples
+6. **Setup guides** - Installation and configuration steps
+
+## Required Content Standards
+
+### README.md Must Include
+
+- Clear project description and purpose
+- Prerequisites and system requirements
+- Step-by-step setup instructions that work
+- Usage examples with actual commands
+- Current architecture overview
+- Contributing guidelines
+- Troubleshooting common issues
+
+### Technical Documentation Must Include
+
+- Current technology stack and versions
+- Working code examples
+- Accurate API endpoints and schemas
+- Valid configuration examples
+- Up-to-date deployment procedures
+
+## Decision Check (before completing any task)
+
+- Have I made changes that affect user setup or usage? → Update README.md
+- Have I modified core architecture? → Update architecture docs
+- Have I changed APIs or data models? → Update API documentation
+- Have I added new features? → Update user guides and examples
+
+## Quality Standards
+
+- All commands and examples MUST be tested and working
+- Use clear, concise language following GitHub markdown best practices
+- Include code blocks with proper syntax highlighting
+- Provide context for why things work the way they do
+- Link related sections and external resources appropriately
+
+## Prohibited
+
+- Leaving outdated setup instructions
+- Including broken or untested examples
+- Generic placeholder content
+- Inconsistent information between docs
+- Missing critical setup steps or dependencies

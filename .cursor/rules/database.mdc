@@ -1,0 +1,51 @@
+---
+description: Database best practices focusing on Prisma
+globs: **/*.prisma
+alwaysApply: false
+---
+
+# Database Best Practices
+
+##  Identifiers & Keys
+
+1. Always use `String` `@id` `@default(cuid())` for primary keys: predictable, distributed-safe, and URL-friendly.
+2. Never use autoincrement integers for IDs. Reserve `UUID`s only if `cuid` has proven issues.
+3. Business-unique fields (e.g. email, publicKey) must be marked @unique.
+
+##  Timestamps & Metadata
+
+1. Every model must include `createdAt` and `updatedAt` with `@default(now())` and `@updatedAt`.
+2. Use `lastUsedAt`, `expiresAt`, or similar fields for entities like tokens, secrets, or keys that need lifecycle tracking.
+3. Consider verified fields (nullable DateTime) for entities requiring confirmation (e.g. users, emails).
+
+##  Relations & Integrity
+
+1. Define relations explicitly (fields, references), no implicit many-to-many.
+2. Always set `onDelete`: `Cascade` and `onUpdate`: Cascade unless business rules dictate otherwise.
+3. Add `@@index for all foreign keys and high-frequency query targets.
+
+## Data Modeling
+
+1. Use enum for fixed sets (roles, statuses), never strings.
+2. Optional fields must be genuinely optional — prefer defaults over nullable if a value always exists.
+3. Use @map only for external compatibility; otherwise, keep schema and database column names aligned in camelCase.
+
+##  Security & Safety
+
+1. Secrets (passwords, API keys) must always be stored hashed, never in plaintext.
+2. Never expose sensitive IDs or keys directly in APIs — use public-safe identifiers (publicKey) distinct from secrets.
+3. Validate all inputs in application logic; Prisma schema constraints are not a replacement for validation.
+
+##  Migrations & Operations
+
+1. Schema changes must always go through `Prisma Migrate`. No manual SQL.
+2. Document every non-trivial field or relation with /// comments in the schema.
+3. Seed scripts are only for development/test environments, never production.
+4. Test queries and migrations against a dedicated test DB.
+
+##  Querying & Performance
+
+1. Always fetch the minimum necessary fields with select or include. Never fetch entire objects blindly.
+2. Use pagination (take, skip, cursor-based) on all queries that return lists.
+3. Batch relational queries to prevent N+1 problems.
+4. Regularly monitor performance and add indexes if query plans show bottlenecks.

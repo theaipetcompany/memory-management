@@ -1,0 +1,131 @@
+---
+alwaysApply: true
+---
+
+# Code Quality Enforcement Rule
+
+## Automatic Quality Checks
+
+After every code change or implementation, the AI agent MUST automatically run the following commands to ensure code quality:
+
+### Required Commands (in order):
+
+1. **Type Checking**: `pnpm typecheck`
+2. **Linting**: `pnpm lint`
+
+### When to Run:
+
+- After implementing new features
+- After modifying existing code
+- After refactoring code
+- After moving or renaming files
+- After any code changes that could introduce type or linting issues
+
+### Error Handling:
+
+- If `pnpm typecheck` fails, fix TypeScript errors before proceeding
+- If `pnpm lint` fails, fix linting errors before proceeding
+- Do not consider the task complete until both commands pass successfully
+- If errors cannot be fixed immediately, document them and create follow-up tasks
+
+### Integration with Development Workflow:
+
+- This rule applies to ALL code changes, regardless of scope
+- Run these checks even for small changes like moving files
+- Include the results in progress updates
+- Mark tasks as incomplete if quality checks fail
+
+### Exception Handling:
+
+- Only skip these checks if explicitly requested by the user
+- Document any skipped checks and the reason
+- Always mention when quality checks are being skipped
+
+## Implementation Notes:
+
+- Use the `run_terminal_cmd` tool to execute these commands
+- Parse output to identify specific errors
+- Fix errors systematically, starting with TypeScript errors
+- Re-run checks after fixes to ensure they pass
+- Update TODO status based on quality check results
+
+This rule ensures consistent code quality and prevents accumulation of technical debt.
+
+## Example Workflow:
+
+1. Make code changes
+2. Run `pnpm typecheck` - if fails, fix TypeScript errors
+3. Run `pnpm lint` - if fails, fix linting errors
+4. Re-run checks until both pass
+5. Mark task as complete only when quality checks pass
+
+## Success Criteria:
+
+- TypeScript compilation succeeds (exit code 0)
+- ESLint passes with no errors (warnings are acceptable)
+- All import paths are correct after file moves
+- No broken references or missing dependencies
+
+# Code Quality Enforcement Rule
+
+## Automatic Quality Checks
+
+After every code change or implementation, the AI agent MUST automatically run the following commands to ensure code quality:
+
+### Required Commands (in order):
+
+1. **Type Checking**: `pnpm typecheck`
+2. **Linting**: `pnpm lint`
+
+### When to Run:
+
+- After implementing new features
+- After modifying existing code
+- After refactoring code
+- After moving or renaming files
+- After any code changes that could introduce type or linting issues
+
+### Error Handling:
+
+- If `pnpm typecheck` fails, fix TypeScript errors before proceeding
+- If `pnpm lint` fails, fix linting errors before proceeding
+- Do not consider the task complete until both commands pass successfully
+- If errors cannot be fixed immediately, document them and create follow-up tasks
+
+### Integration with Development Workflow:
+
+- This rule applies to ALL code changes, regardless of scope
+- Run these checks even for small changes like moving files
+- Include the results in progress updates
+- Mark tasks as incomplete if quality checks fail
+
+### Exception Handling:
+
+- Only skip these checks if explicitly requested by the user
+- Document any skipped checks and the reason
+- Always mention when quality checks are being skipped
+
+## Implementation Notes:
+
+- Use the `run_terminal_cmd` tool to execute these commands
+- Parse output to identify specific errors
+- Fix errors systematically, starting with TypeScript errors
+- Re-run checks after fixes to ensure they pass
+- Update TODO status based on quality check results
+
+This rule ensures consistent code quality and prevents accumulation of technical debt.
+
+## Example Workflow:
+
+1. Make code changes
+2. Run `pnpm typecheck` - if fails, fix TypeScript errors
+3. Run `pnpm lint` - if fails, fix linting errors
+4. Re-run checks until both pass
+5. Mark task as complete only when quality checks pass
+
+## Success Criteria:
+
+- TypeScript compilation succeeds (exit code 0)
+- ESLint passes with no errors (warnings are acceptable)
+- All import paths are correct after file moves
+- No broken references or missing dependencies

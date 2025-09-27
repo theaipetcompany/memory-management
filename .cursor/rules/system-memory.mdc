@@ -1,0 +1,321 @@
+---
+alwaysApply: true
+---
+# Memory Files Structure
+
+This outlines the fundamental principles, recommended files, workflow structure, and essential procedures for maintaining system memory using a file system approach. This system is specifically designed to overcome context loss between large task flows and maintain continuity across complex development sessions.
+
+The Memory Files consist of core documentation files and optional context files. Files build upon each other in a logical hierarchy:
+
+```mermaid
+flowchart TD
+    REQ[Requirements] --> TECH[Technical Documentation]
+    REQ --> ARCH[Architecture]
+
+    ARCH --> TASKS[Task Planning]
+    TECH --> TASKS
+    REQ --> TASKS
+
+    TASKS --> CONTEXT[Active Context]
+    TASKS --> STATE[Session State]
+
+    CONTEXT --> ERRORS[Error Documentation]
+    STATE --> CONTEXT
+    STATE --> SESSIONS[Session History]
+
+    %% Context continuity mechanisms
+    CONTEXT --> CHECKPOINTS[Checkpoints]
+    STATE --> CHECKPOINTS
+    CHECKPOINTS --> SESSIONS
+
+    %% Optional specialized documentation
+    ARCH --> SPEC[Specialized Documentation]
+
+    subgraph RESEARCH[Research]
+        R1[...]
+        R2[...]
+    end
+
+    subgraph PROPOSALS[Proposals]
+        P1[...]
+        P2[...]
+    end
+
+    TECH --o RESEARCH
+    TASKS --o PROPOSALS
+```
+
+## Core Files (Recommended)
+
+These files form the foundation of the memory system. Adapt the naming and structure to fit your specific project needs:
+
+1. **Requirements Documentation** (e.g., `docs/requirements.md`):
+   - Why this system exists
+   - Problems it solves
+   - Core requirements and goals
+   - Foundation document that shapes all other files
+   - Source of truth for project scope
+
+2. **Architecture Documentation** (e.g., `docs/architecture.md`):
+   - How the system should work
+   - Component relationships
+   - Dependencies
+   - Workflow of the solution
+   - System overview diagrams
+
+3. **Technical Documentation** (e.g., `docs/technical.md`):
+   - Technologies used
+   - Development/deployment environment
+   - Key technical decisions
+   - Design patterns in use
+   - Technical constraints
+
+4. **Task Planning** (e.g., `docs/planning.md`):
+   - Task list and project progress
+   - What works
+   - What's left to build
+   - Current status
+   - Known issues
+
+5. **Active Context** (e.g., `docs/active-context.md`):
+   - Current work focus
+   - Active decisions and considerations
+   - Recent changes
+   - Next steps
+
+6. **Error Documentation** (e.g., `docs/errors.md`):
+   - Record of mistakes and their fixes
+   - Known issues: their state, context, and resolution
+   - Prevents repeating the same mistakes
+
+7. **Session State** (e.g., `docs/session-state.md`):
+   - Current session context and progress
+   - Active files, branches, and configurations
+   - Pending decisions and blockers
+   - Quick resume information for context restoration
+
+8. **Session History** (e.g., `docs/session-history.md`):
+   - Chronological log of completed sessions
+   - Key decisions and outcomes per session
+   - Context bridges between sessions
+   - Patterns in workflow and problem-solving
+
+9. **Checkpoints** (e.g., `docs/checkpoints.md`):
+   - Strategic save points in complex workflows
+   - State snapshots before major changes
+   - Rollback points and recovery procedures
+   - Milestone markers for long-running tasks
+
+## Additional Context
+
+Create additional files or folders as Memory files when they help organize:
+
+- Testing strategies
+- Benchmarking setups
+- Possible extensions
+- Deployment procedures
+- Any other project-specific documentation needs
+
+## Context Continuity Mechanisms
+
+To prevent context loss between large task flows, implement these key mechanisms:
+
+### Session Management
+
+- **Session Start**: Always read `session-state.md` and `active-context.md` before beginning work
+- **Session End**: Update `session-state.md` with current progress, open files, and next steps
+- **Session Resume**: Use `session-history.md` to understand previous context and decisions
+
+### Checkpoint System
+
+- **Pre-Major Changes**: Create checkpoints before refactoring, architecture changes, or complex implementations
+- **Milestone Markers**: Document completion of significant features or phases
+- **Rollback Points**: Maintain clear recovery procedures for each checkpoint
+
+### State Preservation
+
+- **Active Context**: Continuously update with current focus, decisions, and blockers
+- **Session State**: Track open files, git branches, environment state, and pending tasks
+- **Cross-Session Links**: Reference previous sessions and their outcomes in current work
+
+## Core Workflows
+
+The system can operate in different modes depending on the current phase of work. These modes are flexible and can be adapted to your specific workflow:
+
+- **Planning Mode**: Use when starting new projects, designing systems, or defining major changes
+- **Implementation Mode**: Use when executing tasks, building features, or making system changes
+- **Resume Mode**: Use when continuing work from a previous session or after interruption
+
+### Planning Mode
+
+This mode is for system design, architecture planning, and task definition.
+
+```mermaid
+flowchart TD
+    Start[Start] --> ReadFiles[Read Relevant Memory Files]
+    ReadFiles --> CheckFiles{Files Complete?}
+
+    CheckFiles -->|No| Plan[Create Plan]
+    Plan --> DocumentChat[Document in Chat]
+
+    CheckFiles -->|Yes| VerifyContext[Verify Context]
+    VerifyContext --> Strategy[Develop Strategy]
+    Strategy --> Present[Present Approach]
+
+    Present --> Verification{Approach Verified?}
+
+    Verification -->|No| Clarify[Seek Clarification]
+    Clarify --> Strategy
+
+    Verification -->|Yes| DocumentMemory[Document in Memory Files]
+```
+
+### Implementation Mode
+
+This mode is for executing tasks, implementing features, and making changes to the system.
+
+```mermaid
+flowchart TD
+    Start[Start] --> Context[Check Relevant Memory Files]
+    Context --> SessionState[Read Session State]
+    SessionState --> Update[Update Documentation]
+    Update --> Checkpoint{Create Checkpoint?}
+    Checkpoint -->|Yes| CreateCheckpoint[Create Checkpoint]
+    Checkpoint -->|No| Rules[Update Lessons Learned & Error Documentation if needed]
+    CreateCheckpoint --> Rules
+    Rules --> Execute[Execute Task]
+    Execute --> Document[Document Changes in Memory Files]
+    Document --> UpdateSession[Update Session State]
+    UpdateSession --> End[End]
+```
+
+### Resume Mode
+
+This mode is for continuing work from a previous session or after interruption.
+
+```mermaid
+flowchart TD
+    Start[Start] --> ReadSession[Read Session State & History]
+    ReadSession --> CheckContext[Verify Active Context]
+    CheckContext --> RestoreState[Restore Previous State]
+    RestoreState --> Checkpoint{From Checkpoint?}
+    Checkpoint -->|Yes| LoadCheckpoint[Load Checkpoint State]
+    Checkpoint -->|No| Continue[Continue from Last Position]
+    LoadCheckpoint --> Continue
+    Continue --> UpdateContext[Update Active Context]
+    UpdateContext --> Implement[Continue Implementation]
+```
+
+### Documentation Updates
+
+Memory Files updates should occur when:
+
+1. Discovering new system patterns
+2. After implementing significant changes
+3. When explicitly requested to update memory files
+4. When context needs clarification
+5. After significant planning is verified
+6. **At session start/end** (critical for context continuity)
+7. **Before major refactoring or architecture changes** (checkpoint creation)
+8. **When switching between different task flows** (state preservation)
+9. **After resolving complex issues** (error documentation and lessons learned)
+
+```mermaid
+flowchart TD
+    Start[Update Process]
+
+    subgraph Process
+        P1[Review Core Files]
+        P2[Update Session State]
+        P3[Document Current State]
+        P4[Clarify Next Steps]
+        P5[Update Lessons & Errors]
+        P6[Update Architecture]
+        P7[Update Session History]
+        P8[Update Specialized Documentation as needed]
+
+        P1 --> P2 --> P3 --> P4 --> P5 --> P6 --> P7 --> P8
+    end
+
+    Start --> Process
+```
+
+Note: When explicitly requested to update memory files, review all core memory files, even if some don't require updates. Focus particularly on active context, session state, and task planning as they track current state and enable context continuity.
+
+## What to Capture
+
+Focus on documenting insights that improve future work efficiency:
+
+### Technical Insights
+
+- Critical implementation paths and patterns
+- Tool usage patterns and preferences
+- Project-specific technical decisions
+- Architecture evolution and rationale
+
+### Process Insights
+
+- User preferences and workflow optimizations
+- Known challenges and their solutions
+- Evolution of project decisions over time
+- Lessons learned from mistakes
+
+### Context Continuity Guidelines
+
+- **Session State**: Always include current git branch, open files, environment setup, and pending decisions
+- **Cross-References**: Link between sessions, checkpoints, and related tasks
+- **Decision Tracking**: Document why decisions were made, not just what was decided
+- **Recovery Procedures**: Include clear steps to resume work from any checkpoint
+
+### Practical Guidelines
+
+- Use consistent formatting across files
+- Include timestamps for major decisions
+- Link related concepts between files
+- Update regularly rather than in large batches
+- **Session Boundaries**: Clearly mark session start/end with context summaries
+- **State Snapshots**: Capture environment state, dependencies, and configuration at key points
+
+The format is flexible - prioritize clarity and actionability over rigid structure. The key is maintaining context continuity across complex, multi-session workflows.
+
+## Large Task Flow Management
+
+For complex, multi-session tasks that span days or weeks, implement these additional strategies:
+
+### Task Decomposition
+
+- Break large tasks into smaller, checkpoint-able units
+- Document dependencies between sub-tasks
+- Create clear handoff points between sessions
+- Maintain a task dependency graph
+
+### Context Preservation Strategies
+
+- **State Immutability**: Document state changes as immutable events
+- **Decision Trees**: Track alternative approaches considered and why they were rejected
+- **Blocker Documentation**: Record what blocked progress and how it was resolved
+- **Environment Consistency**: Document exact environment setup for reproducibility
+
+### Recovery Procedures
+
+- **Quick Resume**: 5-minute procedure to restore context from any checkpoint
+- **Deep Resume**: 30-minute procedure to fully understand previous session context
+- **Emergency Recovery**: Procedure to recover from corrupted or lost session state
+
+### Session Transition Protocol
+
+1. **End-of-Session Checklist**:
+   - Update session state with current progress
+   - Create checkpoint if at milestone
+   - Document any blockers or decisions needed
+   - Note next immediate steps
+   - Update session history with key outcomes
+
+2. **Start-of-Session Checklist**:
+   - Read session state and active context
+   - Review session history for recent context
+   - Verify environment state matches documentation
+   - Confirm current task focus and priorities
+   - Check for any pending decisions or blockers
+
+This systematic approach ensures that complex development work can be paused and resumed without losing critical context or momentum.
