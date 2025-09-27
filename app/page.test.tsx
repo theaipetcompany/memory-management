@@ -35,8 +35,10 @@ jest.mock('@/components/add-image-modal', () => ({
 jest.mock('@/components/submit-button', () => ({
   SubmitButton: ({ images }: any) => (
     <div data-testid="submit-button">
-      <button disabled={images.length === 0}>
-        Submit to OpenAI ({images.length} images)
+      <button disabled={images.length < 10}>
+        {images.length < 10
+          ? `Select ${10 - images.length} more images (${images.length}/10)`
+          : `Submit ${images.length} Selected Images to OpenAI`}
       </button>
     </div>
   ),
@@ -70,7 +72,7 @@ describe('Home Page Integration', () => {
     await waitFor(() => {
       expect(screen.getByTestId('submit-button')).toBeInTheDocument();
       expect(
-        screen.getByText('Submit to OpenAI (1 images)')
+        screen.getByText('Select 10 more images (0/10)')
       ).toBeInTheDocument();
     });
   });
@@ -87,7 +89,7 @@ describe('Home Page Integration', () => {
     render(<Home />);
 
     await waitFor(() => {
-      const button = screen.getByText('Submit to OpenAI (0 images)');
+      const button = screen.getByText('Select 10 more images (0/10)');
       expect(button).toBeDisabled();
     });
   });

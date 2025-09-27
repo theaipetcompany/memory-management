@@ -25,6 +25,17 @@ const mockImages = [
   },
 ];
 
+// Create 10+ images for tests that need minimum requirement
+const mockImagesWithMinimum = Array.from({ length: 10 }, (_, i) => ({
+  id: `${i + 1}`,
+  filename: `test${i + 1}.jpg`,
+  annotation: `Test image ${i + 1}`,
+  filePath: `/uploads/test${i + 1}.jpg`,
+  fileSize: 1024000,
+  mimeType: 'image/jpeg',
+  createdAt: new Date(),
+}));
+
 describe('SubmitButton', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -33,20 +44,20 @@ describe('SubmitButton', () => {
   test('should render submit button', () => {
     render(<SubmitButton images={mockImages} />);
 
-    expect(screen.getByText('Submit to OpenAI')).toBeInTheDocument();
+    expect(screen.getByText('Select 8 more images (2/10)')).toBeInTheDocument();
   });
 
   test('should be disabled when no images', () => {
     render(<SubmitButton images={[]} />);
 
-    const button = screen.getByText('Submit to OpenAI');
+    const button = screen.getByText('Select 10 more images (0/10)');
     expect(button).toBeDisabled();
   });
 
-  test('should be enabled when images exist', () => {
-    render(<SubmitButton images={mockImages} />);
+  test('should be enabled when 10+ images exist', () => {
+    render(<SubmitButton images={mockImagesWithMinimum} />);
 
-    const button = screen.getByText('Submit to OpenAI');
+    const button = screen.getByText('Submit 10 Selected Images to OpenAI');
     expect(button).toBeEnabled();
   });
 
@@ -63,14 +74,20 @@ describe('SubmitButton', () => {
       json: () => Promise.resolve(mockJob),
     });
 
-    render(<SubmitButton images={mockImages} />);
+    render(<SubmitButton images={mockImagesWithMinimum} />);
 
-    const button = screen.getByText('Submit to OpenAI');
+    const button = screen.getByText('Submit 10 Selected Images to OpenAI');
     fireEvent.click(button);
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith('/api/jobs/submit', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageIds: mockImagesWithMinimum.map((img) => img.id),
+        }),
       });
     });
   });
@@ -90,9 +107,9 @@ describe('SubmitButton', () => {
         )
     );
 
-    render(<SubmitButton images={mockImages} />);
+    render(<SubmitButton images={mockImagesWithMinimum} />);
 
-    const button = screen.getByText('Submit to OpenAI');
+    const button = screen.getByText('Submit 10 Selected Images to OpenAI');
     fireEvent.click(button);
 
     expect(screen.getByText('Submitting...')).toBeInTheDocument();
@@ -105,9 +122,9 @@ describe('SubmitButton', () => {
       json: () => Promise.resolve({ error: 'Submission failed' }),
     });
 
-    render(<SubmitButton images={mockImages} />);
+    render(<SubmitButton images={mockImagesWithMinimum} />);
 
-    const button = screen.getByText('Submit to OpenAI');
+    const button = screen.getByText('Submit 10 Selected Images to OpenAI');
     fireEvent.click(button);
 
     await waitFor(() => {
