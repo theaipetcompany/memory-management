@@ -96,7 +96,7 @@ export function ImageManagement() {
   };
 
   return (
-    <div className="w-full max-w-4xl">
+    <div className="w-full max-w-6xl">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-slate-800 dark:text-white">
           Images ({images.length})
