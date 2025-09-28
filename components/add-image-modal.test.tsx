@@ -35,9 +35,9 @@ describe('AddImageModal', () => {
     await user.upload(fileInput, [file1, file2]);
 
     // Check that files are displayed
-    expect(
-      screen.getByText('Selected 2 files: test1.jpg, test2.jpg')
-    ).toBeInTheDocument();
+    expect(screen.getByText('Selected 2 files:')).toBeInTheDocument();
+    expect(screen.getByText('test1.jpg')).toBeInTheDocument();
+    expect(screen.getByText('test2.jpg')).toBeInTheDocument();
 
     const submitButton = screen.getByText('Add 2 Images');
     await user.click(submitButton);
