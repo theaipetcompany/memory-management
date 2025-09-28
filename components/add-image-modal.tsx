@@ -20,18 +20,15 @@ interface AddImageModalProps {
 export function AddImageModal({ onAddImages }: AddImageModalProps) {
   const [open, setOpen] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateFiles = (files: File[]): boolean => {
     if (files.length === 0) {
-      setError('Please select at least one image file');
       return false;
     }
 
     for (const file of files) {
       if (!file.type.startsWith('image/')) {
-        setError(`"${file.name}" is not an image file`);
         return false;
       }
     }
@@ -40,7 +37,6 @@ export function AddImageModal({ onAddImages }: AddImageModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     if (!validateFiles(files)) return;
 
@@ -48,28 +44,26 @@ export function AddImageModal({ onAddImages }: AddImageModalProps) {
     try {
       await onAddImages(files);
       setFiles([]);
-      setOpen(false);
     } catch (err) {
-      setError(`Upload failed. Please try again`);
+      // Error handling is now done in the parent component with toasts
     } finally {
       setIsSubmitting(false);
+      setOpen(false); // Always close the modal after submission attempt
     }
   };
 
   const handleSubmitClick = async () => {
-    setError(null);
-
     if (!validateFiles(files)) return;
 
     setIsSubmitting(true);
     try {
       await onAddImages(files);
       setFiles([]);
-      setOpen(false);
     } catch (err) {
-      setError(`Upload failed. Please try again`);
+      // Error handling is now done in the parent component with toasts
     } finally {
       setIsSubmitting(false);
+      setOpen(false); // Always close the modal after submission attempt
     }
   };
 
@@ -77,11 +71,9 @@ export function AddImageModal({ onAddImages }: AddImageModalProps) {
     const selectedFiles = Array.from(e.target.files || []);
     if (selectedFiles.length > 0) {
       setFiles(selectedFiles);
-      setError(null);
     }
   };
   const handleRetry = () => {
-    setError(null);
     handleSubmitClick();
   };
 
@@ -134,42 +126,6 @@ export function AddImageModal({ onAddImages }: AddImageModalProps) {
               </div>
             )}
           </div>
-
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg
-                    className="h-5 w-5 text-red-400"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <div className="ml-3 flex-1">
-                  <p className="text-sm text-red-800">{error}</p>
-                  {error.includes('Upload failed') && (
-                    <div className="mt-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleRetry}
-                        className="text-red-700 border-red-300 hover:bg-red-50"
-                      >
-                        Retry
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="flex justify-end space-x-2">
             <Button

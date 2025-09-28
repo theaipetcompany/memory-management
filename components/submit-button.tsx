@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/image-table';
 import { fetcher } from '@/lib/fetcher';
+import { toast } from 'sonner';
 
 interface SubmitButtonProps {
   images: Image[];
@@ -11,7 +12,6 @@ interface SubmitButtonProps {
 
 export function SubmitButton({ images }: SubmitButtonProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [jobResult, setJobResult] = useState<{
     openaiJobId: string;
     jobId: string;
@@ -21,12 +21,13 @@ export function SubmitButton({ images }: SubmitButtonProps) {
     if (images.length === 0) return;
 
     if (images.length < 10) {
-      setError('Minimum 10 images required for fine-tuning');
+      toast.error('Minimum 10 images required for fine-tuning', {
+        duration: 5000,
+      });
       return;
     }
 
     setIsSubmitting(true);
-    setError(null);
     setJobResult(null);
 
     try {
@@ -34,6 +35,9 @@ export function SubmitButton({ images }: SubmitButtonProps) {
         openaiJobId: string;
         id: string;
         error?: string;
+        details?: string[];
+        skippedImages?: Array<{ filename: string; reason: string }>;
+        trainingDataSize?: number;
       }>('/api/jobs/submit', {
         method: 'POST',
         body: JSON.stringify({ imageIds: images.map((img) => img.id) }),
@@ -44,15 +48,52 @@ export function SubmitButton({ images }: SubmitButtonProps) {
       }
 
       if (job.error) {
-        throw new Error(job.error);
+        // Handle validation errors with detailed messages
+        if (job.details && job.details.length > 0) {
+          job.details.forEach((detail) => {
+            toast.error('Validation Error', {
+              description: detail,
+              duration: 5000,
+            });
+          });
+        } else {
+          toast.error('Submission Failed', {
+            description: job.error,
+            duration: 5000,
+          });
+        }
+
+        // Show skipped images if any
+        if (job.skippedImages && job.skippedImages.length > 0) {
+          job.skippedImages.forEach(({ filename, reason }) => {
+            toast.warning(`Skipped ${filename}`, {
+              description: reason,
+            });
+          });
+        }
+        return;
       }
 
       setJobResult({
         openaiJobId: job.openaiJobId,
         jobId: job.id,
       });
+
+      // Show success message with details
+      const validImages = job.trainingDataSize || images.length;
+      const skippedCount = job.skippedImages?.length || 0;
+
+      toast.success('Fine-tuning job submitted successfully!', {
+        description: `Processing ${validImages} images${
+          skippedCount > 0 ? ` (${skippedCount} skipped)` : ''
+        }`,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      toast.error('Submission Failed', {
+        description: errorMessage,
+        duration: 5000,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -64,6 +105,7 @@ export function SubmitButton({ images }: SubmitButtonProps) {
         onClick={handleSubmit}
         disabled={images.length < 10 || isSubmitting}
         className="w-full"
+        size="lg"
       >
         {isSubmitting
           ? 'Submitting...'
@@ -75,9 +117,6 @@ export function SubmitButton({ images }: SubmitButtonProps) {
         <p className="text-amber-600 text-sm text-center">
           ⚠️ Minimum 10 images required for OpenAI fine-tuning
         </p>
-      )}
-      {error && (
-        <p className="text-red-500 text-sm text-center">Error: {error}</p>
       )}
       {jobResult && (
         <div className="text-center space-y-2">

@@ -71,10 +71,35 @@ export async function POST(request: NextRequest) {
       }
 
       // Generate JSONL training data
-      const jsonlData = await generateJSONL(images);
+      const jsonlResult = await generateJSONL(images);
 
-      // Validate the JSONL data
-      const validation = validateJSONL(jsonlData);
+      // Check for validation errors
+      if (jsonlResult.validationErrors.length > 0) {
+        await cleanupTempJobFolder(job.id);
+        return NextResponse.json(
+          {
+            error: 'Dataset validation failed',
+            details: jsonlResult.validationErrors,
+            skippedImages: jsonlResult.skippedImages,
+          },
+          { status: 400 }
+        );
+      }
+
+      // Check if we have any valid examples
+      if (jsonlResult.validExamples === 0) {
+        await cleanupTempJobFolder(job.id);
+        return NextResponse.json(
+          {
+            error: 'No valid training examples found',
+            details: jsonlResult.skippedImages,
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validate the JSONL data structure
+      const validation = validateJSONL(jsonlResult.jsonl);
       if (!validation.valid) {
         await cleanupTempJobFolder(job.id);
         return NextResponse.json(
@@ -88,7 +113,7 @@ export async function POST(request: NextRequest) {
 
       // Create a file in OpenAI's format
       const file = await openai.files.create({
-        file: new File([jsonlData], 'training-data.jsonl', {
+        file: new File([jsonlResult.jsonl], 'training-data.jsonl', {
           type: 'application/json',
         }),
         purpose: 'fine-tune',
@@ -115,7 +140,8 @@ export async function POST(request: NextRequest) {
         {
           ...updatedJob,
           openaiFileId: file.id,
-          trainingDataSize: images.length,
+          trainingDataSize: jsonlResult.validExamples,
+          skippedImages: jsonlResult.skippedImages,
         },
         { status: 201 }
       );

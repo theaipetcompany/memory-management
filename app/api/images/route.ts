@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { storeFile } from '@/lib/file-storage';
+import {
+  validateImageFile,
+  OPENAI_VISION_REQUIREMENTS,
+} from '@/lib/image-validation';
 
 export async function GET() {
   try {
@@ -28,19 +32,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File is required' }, { status: 400 });
     }
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      return NextResponse.json(
-        { error: 'File must be an image' },
-        { status: 400 }
-      );
-    }
+    // Comprehensive image validation using OpenAI vision requirements
+    const validation = await validateImageFile(
+      file,
+      OPENAI_VISION_REQUIREMENTS
+    );
 
-    // Validate file size (10MB max)
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
+    if (!validation.isValid) {
       return NextResponse.json(
-        { error: 'File size must be less than 10MB' },
+        {
+          error: 'Image validation failed',
+          details: validation.errors,
+        },
         { status: 400 }
       );
     }

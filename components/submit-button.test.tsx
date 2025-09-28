@@ -4,6 +4,15 @@ import { SubmitButton } from './submit-button';
 // Mock fetch
 global.fetch = jest.fn();
 
+// Mock sonner toast
+jest.mock('sonner', () => ({
+  toast: {
+    error: jest.fn(),
+    success: jest.fn(),
+    warning: jest.fn(),
+  },
+}));
+
 const mockImages = [
   {
     id: '1',
@@ -117,7 +126,40 @@ describe('SubmitButton', () => {
     expect(button).toBeDisabled();
   });
 
+  test('should show success toast on successful submission', async () => {
+    const { toast } = require('sonner');
+
+    const mockJob = {
+      id: 'job-123',
+      status: 'pending',
+      openaiJobId: 'ftjob-abc123',
+      createdAt: new Date(),
+      trainingDataSize: 10,
+    };
+
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(mockJob),
+    });
+
+    render(<SubmitButton images={mockImagesWithMinimum} />);
+
+    const button = screen.getByText('Submit 10 Images to OpenAI');
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith(
+        'Fine-tuning job submitted successfully!',
+        {
+          description: 'Processing 10 images',
+        }
+      );
+    });
+  });
+
   test('should handle submission error', async () => {
+    const { toast } = require('sonner');
+    
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
       json: () => Promise.resolve({ error: 'Submission failed' }),
@@ -129,7 +171,9 @@ describe('SubmitButton', () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.getByText('Error: Submission failed')).toBeInTheDocument();
+      expect(toast.error).toHaveBeenCalledWith('Submission Failed', {
+        description: 'Submission failed',
+      });
     });
   });
 });
