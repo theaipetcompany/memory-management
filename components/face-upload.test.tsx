@@ -22,21 +22,24 @@ global.FileReader = jest.fn(() => mockFileReader) as any;
 describe('Face Upload Component', () => {
   const mockOnImageUpload = jest.fn();
   const mockOnFaceDetected = jest.fn();
+  const mockOnFaceLinked = jest.fn();
 
   beforeEach(() => {
     mockOnImageUpload.mockClear().mockResolvedValue(undefined);
     mockOnFaceDetected.mockClear().mockResolvedValue(undefined);
+    mockOnFaceLinked.mockClear().mockResolvedValue(undefined);
     (global.URL.createObjectURL as jest.Mock).mockClear();
     (global.URL.revokeObjectURL as jest.Mock).mockClear();
   });
 
   describe('file upload', () => {
-    it('should accept image files only', async () => {
+    it('should accept image files and show preview', async () => {
       const user = userEvent.setup();
       render(
         <FaceUpload
           onImageUpload={mockOnImageUpload}
           onFaceDetected={mockOnFaceDetected}
+          showSubmitButton={true}
         />
       );
 
@@ -47,7 +50,13 @@ describe('Face Upload Component', () => {
 
       await user.upload(fileInput, imageFile);
 
-      expect(mockOnImageUpload).toHaveBeenCalledWith(imageFile);
+      // Should show preview and submit button, but not automatically upload
+      await waitFor(() => {
+        expect(screen.getByText('Add to Memory')).toBeInTheDocument();
+      });
+
+      // onImageUpload should not be called automatically
+      expect(mockOnImageUpload).not.toHaveBeenCalled();
     });
 
     it('should validate image dimensions', async () => {
@@ -98,6 +107,7 @@ describe('Face Upload Component', () => {
         <FaceUpload
           onImageUpload={mockOnImageUpload}
           onFaceDetected={mockOnFaceDetected}
+          showSubmitButton={true}
         />
       );
 
@@ -116,8 +126,11 @@ describe('Face Upload Component', () => {
       });
 
       await waitFor(() => {
-        expect(mockOnImageUpload).toHaveBeenCalledWith(imageFile);
+        expect(screen.getByText('Add to Memory')).toBeInTheDocument();
       });
+
+      // Should not automatically upload
+      expect(mockOnImageUpload).not.toHaveBeenCalled();
     });
 
     it('should show file size validation error', async () => {
@@ -153,6 +166,206 @@ describe('Face Upload Component', () => {
       expect(
         screen.getByText('Supported formats: JPEG, PNG, WEBP')
       ).toBeInTheDocument();
+    });
+  });
+
+  describe('name field', () => {
+    it('should render name input field when showNameField is true', () => {
+      render(
+        <FaceUpload
+          onImageUpload={mockOnImageUpload}
+          onFaceDetected={mockOnFaceDetected}
+          onFaceLinked={mockOnFaceLinked}
+          showNameField={true}
+        />
+      );
+
+      expect(screen.getByLabelText('Person Name *')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("Enter the person's name...")
+      ).toBeInTheDocument();
+    });
+
+    it('should not render name input field when showNameField is false', () => {
+      render(
+        <FaceUpload
+          onImageUpload={mockOnImageUpload}
+          onFaceDetected={mockOnFaceDetected}
+          onFaceLinked={mockOnFaceLinked}
+          showNameField={false}
+        />
+      );
+
+      expect(screen.queryByLabelText('Person Name *')).not.toBeInTheDocument();
+    });
+
+    it('should show submit button when showSubmitButton is true', async () => {
+      const user = userEvent.setup();
+      render(
+        <FaceUpload
+          onImageUpload={mockOnImageUpload}
+          onFaceDetected={mockOnFaceDetected}
+          onFaceLinked={mockOnFaceLinked}
+          showNameField={true}
+          showSubmitButton={true}
+        />
+      );
+
+      const nameInput = screen.getByLabelText('Person Name *');
+      const fileInput = screen.getByLabelText('Upload image');
+      const imageFile = new File(['image data'], 'test.jpg', {
+        type: 'image/jpeg',
+      });
+
+      await user.type(nameInput, 'John Doe');
+      await user.upload(fileInput, imageFile);
+
+      await waitFor(() => {
+        expect(screen.getByText('Add to Memory')).toBeInTheDocument();
+      });
+    });
+
+    it('should not show submit button when showSubmitButton is false', () => {
+      render(
+        <FaceUpload
+          onImageUpload={mockOnImageUpload}
+          onFaceDetected={mockOnFaceDetected}
+          onFaceLinked={mockOnFaceLinked}
+          showNameField={true}
+          showSubmitButton={false}
+        />
+      );
+
+      expect(screen.queryByText('Add to Memory')).not.toBeInTheDocument();
+    });
+
+    it('should validate that name is required before submission', async () => {
+      const user = userEvent.setup();
+      render(
+        <FaceUpload
+          onImageUpload={mockOnImageUpload}
+          onFaceDetected={mockOnFaceDetected}
+          onFaceLinked={mockOnFaceLinked}
+          showNameField={true}
+          showSubmitButton={true}
+        />
+      );
+
+      const fileInput = screen.getByLabelText('Upload image');
+      const imageFile = new File(['image data'], 'test.jpg', {
+        type: 'image/jpeg',
+      });
+
+      await user.upload(fileInput, imageFile);
+
+      await waitFor(() => {
+        expect(screen.getByText('Add to Memory')).toBeInTheDocument();
+      });
+
+      const submitButton = screen.getByText('Add to Memory');
+      await user.click(submitButton);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Please enter a person name')
+        ).toBeInTheDocument();
+      });
+
+      // Should not call onImageUpload without a name
+      expect(mockOnImageUpload).not.toHaveBeenCalled();
+    });
+
+    it('should call onImageUpload when submit button is clicked', async () => {
+      const user = userEvent.setup();
+      render(
+        <FaceUpload
+          onImageUpload={mockOnImageUpload}
+          onFaceDetected={mockOnFaceDetected}
+          onFaceLinked={mockOnFaceLinked}
+          showNameField={true}
+          showSubmitButton={true}
+        />
+      );
+
+      const nameInput = screen.getByLabelText('Person Name *');
+      const fileInput = screen.getByLabelText('Upload image');
+      const imageFile = new File(['image data'], 'test.jpg', {
+        type: 'image/jpeg',
+      });
+
+      await user.type(nameInput, 'John Doe');
+      await user.upload(fileInput, imageFile);
+
+      await waitFor(() => {
+        expect(screen.getByText('Add to Memory')).toBeInTheDocument();
+      });
+
+      const submitButton = screen.getByText('Add to Memory');
+      await user.click(submitButton);
+
+      expect(mockOnImageUpload).toHaveBeenCalledWith(imageFile, 'John Doe');
+    });
+
+    it('should pass name to onImageUpload when provided', async () => {
+      const user = userEvent.setup();
+      render(
+        <FaceUpload
+          onImageUpload={mockOnImageUpload}
+          onFaceDetected={mockOnFaceDetected}
+          onFaceLinked={mockOnFaceLinked}
+          showNameField={true}
+          showSubmitButton={true}
+        />
+      );
+
+      const nameInput = screen.getByLabelText('Person Name *');
+      const fileInput = screen.getByLabelText('Upload image');
+      const imageFile = new File(['image data'], 'test.jpg', {
+        type: 'image/jpeg',
+      });
+
+      await user.type(nameInput, 'John Doe');
+      await user.upload(fileInput, imageFile);
+
+      await waitFor(() => {
+        expect(screen.getByText('Add to Memory')).toBeInTheDocument();
+      });
+
+      const submitButton = screen.getByText('Add to Memory');
+      await user.click(submitButton);
+
+      expect(mockOnImageUpload).toHaveBeenCalledWith(imageFile, 'John Doe');
+    });
+
+    it('should call onFaceLinked when name is provided and faces are detected', async () => {
+      const user = userEvent.setup();
+      const mockFaces = [
+        { x: 100, y: 100, width: 200, height: 200, confidence: 0.95 },
+      ];
+      const mockDetectFaces = jest.fn().mockResolvedValue(mockFaces);
+
+      render(
+        <FaceUpload
+          onImageUpload={mockOnImageUpload}
+          onFaceDetected={mockOnFaceDetected}
+          onFaceLinked={mockOnFaceLinked}
+          detectFaces={mockDetectFaces}
+          showNameField={true}
+        />
+      );
+
+      const nameInput = screen.getByLabelText('Person Name *');
+      const fileInput = screen.getByLabelText('Upload image');
+      const imageFile = new File(['image data'], 'test.jpg', {
+        type: 'image/jpeg',
+      });
+
+      await user.type(nameInput, 'John Doe');
+      await user.upload(fileInput, imageFile);
+
+      await waitFor(() => {
+        expect(mockOnFaceLinked).toHaveBeenCalledWith('John Doe', mockFaces);
+      });
     });
   });
 
@@ -287,15 +500,25 @@ describe('Face Upload Component', () => {
         <FaceUpload
           onImageUpload={mockOnImageUpload}
           onFaceDetected={mockOnFaceDetected}
+          showSubmitButton={true}
         />
       );
 
+      const nameInput = screen.getByLabelText('Person Name *');
       const fileInput = screen.getByLabelText('Upload image');
       const imageFile = new File(['image data'], 'test.jpg', {
         type: 'image/jpeg',
       });
 
+      await user.type(nameInput, 'John Doe');
       await user.upload(fileInput, imageFile);
+
+      await waitFor(() => {
+        expect(screen.getByText('Add to Memory')).toBeInTheDocument();
+      });
+
+      const submitButton = screen.getByText('Add to Memory');
+      await user.click(submitButton);
 
       await waitFor(() => {
         expect(screen.getByText('Upload failed')).toBeInTheDocument();

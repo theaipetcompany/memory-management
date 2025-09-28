@@ -14,11 +14,14 @@ interface DetectedFace {
 }
 
 interface FaceUploadProps {
-  onImageUpload: (file: File) => Promise<void>;
+  onImageUpload: (file: File, name: string) => Promise<void>;
   onFaceDetected?: (faces: DetectedFace[]) => Promise<void>;
+  onFaceLinked?: (name: string, faces: DetectedFace[]) => Promise<void>;
   loading?: boolean;
   error?: string;
   detectFaces?: (file: File) => Promise<DetectedFace[]>;
+  showNameField?: boolean;
+  showSubmitButton?: boolean;
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -27,9 +30,12 @@ const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 export function FaceUpload({
   onImageUpload,
   onFaceDetected,
+  onFaceLinked,
   loading = false,
   error,
   detectFaces,
+  showNameField = true,
+  showSubmitButton = true,
 }: FaceUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -39,6 +45,7 @@ export function FaceUpload({
     DetectedFace[] | null
   >(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [personName, setPersonName] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateFile = (file: File): string | null => {
@@ -69,23 +76,29 @@ export function FaceUpload({
       setPreviewUrl(url);
 
       try {
-        await onImageUpload(file);
-
-        // Face detection
+        // Face detection only (no upload yet)
         if (detectFaces) {
           const faces = await detectFaces(file);
           setFaceDetectionResult(faces);
+
           if (onFaceDetected) {
             await onFaceDetected(faces);
           }
+
+          // If we have a name and faces, trigger face linking
+          if (personName.trim() && onFaceLinked) {
+            await onFaceLinked(personName.trim(), faces);
+          }
         }
       } catch (err) {
-        setUploadError(err instanceof Error ? err.message : 'Upload failed');
+        setUploadError(
+          err instanceof Error ? err.message : 'Face detection failed'
+        );
       } finally {
         setIsProcessing(false);
       }
     },
-    [onImageUpload, onFaceDetected, detectFaces]
+    [onFaceDetected, onFaceLinked, detectFaces, personName]
   );
 
   const handleFileInputChange = (
@@ -137,6 +150,29 @@ export function FaceUpload({
     fileInputRef.current?.click();
   };
 
+  const handleSubmit = async () => {
+    if (!selectedFile) {
+      setUploadError('Please select an image first');
+      return;
+    }
+
+    if (!personName.trim()) {
+      setUploadError('Please enter a person name');
+      return;
+    }
+
+    setIsProcessing(true);
+    setUploadError(null);
+
+    try {
+      await onImageUpload(selectedFile, personName.trim());
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const displayError = error || uploadError;
 
   return (
@@ -147,6 +183,26 @@ export function FaceUpload({
           Supported formats: JPEG, PNG, WEBP
         </p>
       </div>
+
+      {/* Name Input Field */}
+      {showNameField && (
+        <div className="space-y-2">
+          <Label htmlFor="person-name">Person Name *</Label>
+          <Input
+            id="person-name"
+            type="text"
+            placeholder="Enter the person's name..."
+            value={personName}
+            onChange={(e) => setPersonName(e.target.value)}
+            disabled={loading}
+            className="w-full"
+            required
+          />
+          <p className="text-xs text-muted-foreground">
+            Enter a name to link this face with a person in your memory
+          </p>
+        </div>
+      )}
 
       {/* Upload Area */}
       <div
@@ -190,10 +246,19 @@ export function FaceUpload({
                 variant="outline"
                 size="sm"
                 onClick={handleRemoveImage}
-                disabled={loading}
+                disabled={loading || isProcessing}
               >
                 Remove image
               </Button>
+              {showSubmitButton && (
+                <Button
+                  onClick={handleSubmit}
+                  disabled={loading || isProcessing}
+                  size="sm"
+                >
+                  {isProcessing ? 'Creating Memory...' : 'Add to Memory'}
+                </Button>
+              )}
             </div>
           </div>
         ) : (
