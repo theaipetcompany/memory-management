@@ -11,14 +11,16 @@ export interface ImageData {
 
 export interface TrainingExample {
   messages: Array<{
-    role: 'user' | 'assistant';
-    content: Array<{
-      type: 'text' | 'image_url';
-      text?: string;
-      image_url?: {
-        url: string;
-      };
-    }>;
+    role: 'user' | 'assistant' | 'system';
+    content:
+      | string
+      | Array<{
+          type: 'text' | 'image_url';
+          text?: string;
+          image_url?: {
+            url: string;
+          };
+        }>;
   }>;
 }
 
@@ -34,6 +36,10 @@ export async function generateJSONL(images: ImageData[]): Promise<string> {
 
       const example: TrainingExample = {
         messages: [
+          {
+            role: 'system',
+            content: 'You are an assistant that identifies uncommon cheeses.',
+          },
           {
             role: 'user',
             content: [
