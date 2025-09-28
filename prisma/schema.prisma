@@ -12,10 +12,12 @@ model Image {
   id         String   @id @default(cuid())
   filename   String
   annotation String
-  filePath   String   // Path to stored file
-  fileSize   Int      // File size in bytes
-  mimeType   String   // MIME type of the file
+  filePath   String // Path to stored file
+  fileSize   Int // File size in bytes
+  mimeType   String // MIME type of the file
   createdAt  DateTime @default(now())
+
+  @@map("images")
 }
 
 model Job {
@@ -23,4 +25,40 @@ model Job {
   status      String   @default("pending")
   openaiJobId String?
   createdAt   DateTime @default(now())
+
+  @@map("jobs")
+}
+
+model MemoryEntry {
+  id               String   @id @default(cuid())
+  name             String
+  firstMet         DateTime @default(now())
+  lastSeen         DateTime @default(now())
+  interactionCount Int      @default(0)
+  introducedBy     String?
+  notes            String?
+  preferences      String[]
+  tags             String[]
+  relationshipType String   @default("friend")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  interactions Interaction[]
+
+  @@map("memory_entries")
+}
+
+model Interaction {
+  id                String   @id @default(cuid())
+  memoryEntryId     String
+  interactionType   String
+  context           String?
+  responseGenerated String?
+  emotion           String?
+  actions           String[]
+  createdAt         DateTime @default(now())
+
+  memoryEntry MemoryEntry @relation(fields: [memoryEntryId], references: [id], onDelete: Cascade)
+
+  @@map("interactions")
 }

@@ -11,7 +11,7 @@ describe('NavigationBar', () => {
     render(<NavigationBar />);
 
     expect(screen.getByText('Memory Management')).toBeInTheDocument();
-    expect(screen.getByText('Upload Images')).toBeInTheDocument();
+    expect(screen.getByText('Learning')).toBeInTheDocument();
     expect(screen.getByText('Fine-tuning Jobs')).toBeInTheDocument();
   });
 
@@ -28,10 +28,10 @@ describe('NavigationBar', () => {
   it('has correct href attributes', () => {
     render(<NavigationBar />);
 
-    const uploadLink = screen.getByText('Upload Images');
+    const learningLink = screen.getByText('Learning');
     const jobsLink = screen.getByText('Fine-tuning Jobs');
 
-    expect(uploadLink.closest('a')).toHaveAttribute('href', '/');
+    expect(learningLink.closest('a')).toHaveAttribute('href', '/learning');
     expect(jobsLink.closest('a')).toHaveAttribute('href', '/jobs');
   });
 });
