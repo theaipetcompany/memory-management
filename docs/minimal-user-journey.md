@@ -15,11 +15,21 @@
 ### 2. Add Images
 
 - User clicks "Add Images" button
-- Modal opens with multi-file upload and annotation field
-- User selects multiple images and enters annotation
+- Modal opens with multi-file upload (no annotation field)
+- User selects multiple images
 - Clicks "Add X Images" to save all at once
+- Images are uploaded with empty annotations
 
-### 3. Submit to OpenAI
+### 3. Edit Annotations
+
+- User clicks on any annotation cell in the table to edit
+- Input field appears for inline editing
+- User can type annotation and press Enter to save
+- User can press Tab to move to the next annotation input
+- User can press Escape to cancel editing
+- Empty annotations show "Click to add annotation..." placeholder
+
+### 4. Submit to OpenAI
 
 - User clicks "Submit to OpenAI" button
 - System submits ALL uploaded images to OpenAI API
@@ -34,9 +44,9 @@
 ## Error Handling
 
 - Invalid file format → Show error
-- Missing annotation → Highlight field
 - Upload failure → Retry option
 - No images → Disable submit button
 - Less than 10 images → Show warning message
+- Annotation update failure → Show error message
 
 That's it. No authentication, no complex features, just the basics.

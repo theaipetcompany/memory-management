@@ -2,9 +2,10 @@
 
 ## Core Requirements
 
-1. **Image Table**: Display images with filename, annotation, date
-2. **Add Images Modal**: Multi-file upload form to add multiple images with annotation
-3. **Submit Button**: Send ALL uploaded images to OpenAI API (minimum 10 required)
+1. **Image Table**: Display images with filename, annotation (editable), date
+2. **Add Images Modal**: Multi-file upload form to add multiple images (no annotation required)
+3. **Inline Annotation Editing**: Click-to-edit annotations directly in the table with Tab navigation
+4. **Submit Button**: Send ALL uploaded images to OpenAI API (minimum 10 required)
 
 ## Minimal Database Schema
 
@@ -30,7 +31,7 @@ model Job {
 app/api/
 ├── images/
 │   ├── route.ts          # GET all images, POST new image
-│   └── [id]/route.ts     # DELETE image
+│   └── [id]/route.ts     # DELETE image, PATCH annotation
 └── jobs/
     └── submit/route.ts   # POST submit to OpenAI
 ```
@@ -39,12 +40,13 @@ app/api/
 
 ```
 components/
-├── image-table.tsx        # Table showing images
-├── add-image-modal.tsx     # Modal to add image
+├── image-table.tsx        # Table showing images with inline editing
+├── add-image-modal.tsx     # Modal to add images (no annotation)
 └── ui/                   # Basic shadcn components
     ├── table.tsx
     ├── dialog.tsx
-    └── button.tsx
+    ├── button.tsx
+    └── input.tsx
 ```
 
 ## Minimal Pages

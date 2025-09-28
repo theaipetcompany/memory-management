@@ -19,7 +19,7 @@ describe('AddImageModal', () => {
     expect(screen.getByText('Add New Images')).toBeInTheDocument();
   });
 
-  test('should submit multiple images', async () => {
+  test('should submit multiple images without annotation', async () => {
     const user = userEvent.setup();
     render(<AddImageModal onAddImages={mockAddImages} />);
 
@@ -29,12 +29,10 @@ describe('AddImageModal', () => {
 
     // Fill form
     const fileInput = screen.getByLabelText('Image Files');
-    const annotationInput = screen.getByLabelText('Annotation');
 
     const file1 = new File(['test1'], 'test1.jpg', { type: 'image/jpeg' });
     const file2 = new File(['test2'], 'test2.jpg', { type: 'image/jpeg' });
     await user.upload(fileInput, [file1, file2]);
-    await user.type(annotationInput, 'Test images');
 
     // Check that files are displayed
     expect(
@@ -45,10 +43,7 @@ describe('AddImageModal', () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(mockAddImages).toHaveBeenCalledWith({
-        files: [file1, file2],
-        annotation: 'Test images',
-      });
+      expect(mockAddImages).toHaveBeenCalledWith([file1, file2]);
     });
   });
 
@@ -62,11 +57,9 @@ describe('AddImageModal', () => {
 
     // Fill and submit form
     const fileInput = screen.getByLabelText('Image Files');
-    const annotationInput = screen.getByLabelText('Annotation');
 
     const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
     await user.upload(fileInput, file);
-    await user.type(annotationInput, 'A test image');
 
     const submitButton = screen.getByText('Add 1 Image');
     await user.click(submitButton);

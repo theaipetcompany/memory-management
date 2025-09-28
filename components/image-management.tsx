@@ -28,24 +28,31 @@ export function ImageManagement() {
     fetchImages();
   }, []);
 
-  const handleAddImages = async (data: {
-    files: File[];
-    annotation: string;
-  }) => {
+  const handleAddImages = async (files: File[]) => {
     try {
-      // Upload each file individually with the same annotation
-      for (const file of data.files) {
+      // Upload each file individually without annotation
+      for (const file of files) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('annotation', data.annotation);
+        formData.append('annotation', ''); // Empty annotation, will be edited in table
 
-        const result = await fetcher('/api/images', {
+        const response = await fetch('/api/images', {
           method: 'POST',
           body: formData,
         });
 
-        if (result === null) {
-          throw new Error(`Failed to upload ${file.name}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            `Failed to upload ${file.name}: ${
+              errorData.error || 'Unknown error'
+            }`
+          );
+        }
+
+        const result = await response.json();
+        if (!result) {
+          throw new Error(`Failed to upload ${file.name}: No response data`);
         }
       }
 
@@ -53,6 +60,24 @@ export function ImageManagement() {
     } catch (error) {
       console.error('Error adding images:', error);
       throw error; // Re-throw to let the modal handle the error
+    }
+  };
+
+  const handleUpdateAnnotation = async (id: string, annotation: string) => {
+    try {
+      const result = await fetcher(`/api/images/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ annotation }),
+      });
+
+      if (result !== null) {
+        await fetchImages(); // Refresh the images list
+      }
+    } catch (error) {
+      console.error('Error updating annotation:', error);
     }
   };
 
@@ -85,7 +110,11 @@ export function ImageManagement() {
         </div>
       ) : (
         <>
-          <ImageTable images={images} onDeleteImage={handleDeleteImage} />
+          <ImageTable
+            images={images}
+            onDeleteImage={handleDeleteImage}
+            onUpdateAnnotation={handleUpdateAnnotation}
+          />
           <div className="mt-6">
             <SubmitButton images={images} />
           </div>

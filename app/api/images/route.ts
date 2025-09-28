@@ -24,11 +24,8 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File;
     const annotation = formData.get('annotation') as string;
 
-    if (!file || !annotation) {
-      return NextResponse.json(
-        { error: 'File and annotation are required' },
-        { status: 400 }
-      );
+    if (!file) {
+      return NextResponse.json({ error: 'File is required' }, { status: 400 });
     }
 
     // Validate file type
@@ -60,7 +57,7 @@ export async function POST(request: NextRequest) {
     const image = await db.image.create({
       data: {
         filename: file.name,
-        annotation: annotation.trim(),
+        annotation: annotation?.trim() || '',
         filePath: storedFile.filePath,
         fileSize: storedFile.fileSize,
         mimeType: storedFile.mimeType,

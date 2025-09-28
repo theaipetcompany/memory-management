@@ -13,13 +13,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface AddImageModalProps {
-  onAddImages: (data: { files: File[]; annotation: string }) => void;
+  onAddImages: (files: File[]) => void;
 }
 
 export function AddImageModal({ onAddImages }: AddImageModalProps) {
   const [open, setOpen] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
-  const [annotation, setAnnotation] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,26 +37,16 @@ export function AddImageModal({ onAddImages }: AddImageModalProps) {
     return true;
   };
 
-  const validateAnnotation = (annotation: string): boolean => {
-    if (!annotation.trim()) {
-      setError('Annotation is required');
-      return false;
-    }
-    return true;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!validateFiles(files)) return;
-    if (!validateAnnotation(annotation)) return;
 
     setIsSubmitting(true);
     try {
-      await onAddImages({ files, annotation: annotation.trim() });
+      await onAddImages(files);
       setFiles([]);
-      setAnnotation('');
       setOpen(false);
     } catch (err) {
       setError(`Upload failed. Please try again`);
@@ -70,13 +59,11 @@ export function AddImageModal({ onAddImages }: AddImageModalProps) {
     setError(null);
 
     if (!validateFiles(files)) return;
-    if (!validateAnnotation(annotation)) return;
 
     setIsSubmitting(true);
     try {
-      await onAddImages({ files, annotation: annotation.trim() });
+      await onAddImages(files);
       setFiles([]);
-      setAnnotation('');
       setOpen(false);
     } catch (err) {
       setError(`Upload failed. Please try again`);
@@ -92,12 +79,6 @@ export function AddImageModal({ onAddImages }: AddImageModalProps) {
       setError(null);
     }
   };
-
-  const handleAnnotationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAnnotation(e.target.value);
-    setError(null);
-  };
-
   const handleRetry = () => {
     setError(null);
     handleSubmitClick();
@@ -130,17 +111,6 @@ export function AddImageModal({ onAddImages }: AddImageModalProps) {
                 {files.map((f) => f.name).join(', ')}
               </p>
             )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="annotation">Annotation</Label>
-            <Input
-              id="annotation"
-              name="annotation"
-              value={annotation}
-              onChange={handleAnnotationChange}
-              placeholder="Describe the image..."
-              required
-            />
           </div>
 
           {error && (

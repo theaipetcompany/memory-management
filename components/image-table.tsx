@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -9,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 
 export interface Image {
@@ -24,9 +26,17 @@ export interface Image {
 interface ImageTableProps {
   images: Image[];
   onDeleteImage: (id: string) => void;
+  onUpdateAnnotation?: (id: string, annotation: string) => void;
 }
 
-export function ImageTable({ images, onDeleteImage }: ImageTableProps) {
+export function ImageTable({
+  images,
+  onDeleteImage,
+  onUpdateAnnotation,
+}: ImageTableProps) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState('');
+  const inputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   if (images.length === 0) {
     return (
       <div className="text-center py-8">
@@ -51,6 +61,54 @@ export function ImageTable({ images, onDeleteImage }: ImageTableProps) {
   const getImageUrl = (filePath: string): string => {
     const filename = filePath.split('/').pop();
     return `/uploads/${filename}`;
+  };
+
+  const handleEditStart = (id: string, currentAnnotation: string) => {
+    setEditingId(id);
+    setEditingValue(currentAnnotation);
+  };
+
+  const handleEditSave = async (id: string) => {
+    if (onUpdateAnnotation) {
+      await onUpdateAnnotation(id, editingValue.trim());
+    }
+    setEditingId(null);
+    setEditingValue('');
+  };
+
+  const handleEditCancel = () => {
+    setEditingId(null);
+    setEditingValue('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, id: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleEditSave(id);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      handleEditCancel();
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      handleEditSave(id);
+      // Move to next annotation input
+      const currentIndex = images.findIndex((img) => img.id === id);
+      const nextIndex = e.shiftKey ? currentIndex - 1 : currentIndex + 1;
+      if (nextIndex >= 0 && nextIndex < images.length) {
+        const nextId = images[nextIndex].id;
+        setTimeout(() => {
+          handleEditStart(nextId, images[nextIndex].annotation);
+        }, 0);
+      }
+    }
+  };
+
+  const handleInputRef = (id: string) => (el: HTMLInputElement | null) => {
+    inputRefs.current[id] = el;
+    if (el && editingId === id) {
+      el.focus();
+      el.select();
+    }
   };
 
   return (
@@ -81,7 +139,32 @@ export function ImageTable({ images, onDeleteImage }: ImageTableProps) {
                 </div>
               </TableCell>
               <TableCell className="font-medium">{image.filename}</TableCell>
-              <TableCell>{image.annotation}</TableCell>
+              <TableCell>
+                {editingId === image.id ? (
+                  <Input
+                    ref={handleInputRef(image.id)}
+                    value={editingValue}
+                    onChange={(e) => setEditingValue(e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(e, image.id)}
+                    onBlur={() => handleEditSave(image.id)}
+                    className="w-full"
+                    placeholder="Enter annotation..."
+                    autoFocus
+                  />
+                ) : (
+                  <div
+                    className="cursor-pointer hover:bg-gray-50 p-2 rounded min-h-[2rem] flex items-center"
+                    onClick={() => handleEditStart(image.id, image.annotation)}
+                    title="Click to edit annotation"
+                  >
+                    {image.annotation || (
+                      <span className="text-gray-400 italic">
+                        Click to add annotation...
+                      </span>
+                    )}
+                  </div>
+                )}
+              </TableCell>
               <TableCell>{formatFileSize(image.fileSize)}</TableCell>
               <TableCell>{formatDate(image.createdAt)}</TableCell>
               <TableCell>
