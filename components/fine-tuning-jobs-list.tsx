@@ -44,7 +44,13 @@ export function FineTuningJobsList() {
         '/api/fine-tuning-jobs'
       );
       if (data) {
-        setJobs(data.jobs);
+        // Filter for running jobs and sort by creation date (latest first)
+        const runningJobs = data.jobs
+          .filter((job) => job.status === 'running')
+          .sort((a, b) => b.created_at - a.created_at);
+
+        // Show only the latest running job
+        setJobs(runningJobs.slice(0, 1));
       }
     } catch (error) {
       console.error('Error fetching fine-tuning jobs:', error);
@@ -88,7 +94,7 @@ export function FineTuningJobsList() {
     return (
       <div className="w-full max-w-6xl">
         <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-6">
-          Fine-Tuning Jobs
+          Running Fine-Tuning Jobs
         </h2>
         <div className="text-center text-slate-600 dark:text-slate-300">
           Loading fine-tuning jobs...
@@ -101,10 +107,10 @@ export function FineTuningJobsList() {
     return (
       <div className="w-full max-w-6xl">
         <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-6">
-          Fine-Tuning Jobs
+          Running Fine-Tuning Jobs
         </h2>
         <div className="text-center text-slate-600 dark:text-slate-300">
-          No fine-tuning jobs found
+          No running fine-tuning jobs found
         </div>
       </div>
     );
@@ -113,7 +119,7 @@ export function FineTuningJobsList() {
   return (
     <div className="w-full max-w-6xl">
       <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-6">
-        Fine-Tuning Jobs ({jobs.length})
+        Running Fine-Tuning Jobs ({jobs.length})
       </h2>
 
       <div className="space-y-4">
@@ -167,7 +173,7 @@ export function FineTuningJobsList() {
               </div>
             </div>
 
-            {job.error && (
+            {job.error && job.error.message && (
               <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
                 <p className="text-sm text-red-800 dark:text-red-200">
                   <span className="font-medium">Error:</span>{' '}

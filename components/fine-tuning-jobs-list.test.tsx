@@ -69,7 +69,7 @@ describe('FineTuningJobsList', () => {
     jest.clearAllMocks();
   });
 
-  test('should render fine-tuning jobs list', async () => {
+  test('should render running fine-tuning jobs only', async () => {
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ jobs: mockJobs, total: 3 }),
@@ -81,14 +81,18 @@ describe('FineTuningJobsList', () => {
     render(<FineTuningJobsList />);
 
     await waitFor(() => {
-      expect(screen.getByText('Fine-Tuning Jobs (3)')).toBeInTheDocument();
-      expect(screen.getByText('ftjob-abc123')).toBeInTheDocument();
+      expect(
+        screen.getByText('Running Fine-Tuning Jobs (1)')
+      ).toBeInTheDocument();
+      // Only the running job should be displayed
       expect(screen.getByText('ftjob-def456')).toBeInTheDocument();
-      expect(screen.getByText('ftjob-ghi789')).toBeInTheDocument();
+      // Other jobs should not be displayed
+      expect(screen.queryByText('ftjob-abc123')).not.toBeInTheDocument();
+      expect(screen.queryByText('ftjob-ghi789')).not.toBeInTheDocument();
     });
   });
 
-  test('should display job statuses correctly', async () => {
+  test('should display running job status correctly', async () => {
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ jobs: mockJobs, total: 3 }),
@@ -100,9 +104,11 @@ describe('FineTuningJobsList', () => {
     render(<FineTuningJobsList />);
 
     await waitFor(() => {
-      expect(screen.getByText('succeeded')).toBeInTheDocument();
+      // Only running status should be displayed
       expect(screen.getByText('running')).toBeInTheDocument();
-      expect(screen.getByText('failed')).toBeInTheDocument();
+      // Other statuses should not be displayed
+      expect(screen.queryByText('succeeded')).not.toBeInTheDocument();
+      expect(screen.queryByText('failed')).not.toBeInTheDocument();
     });
   });
 
@@ -157,7 +163,9 @@ describe('FineTuningJobsList', () => {
     render(<FineTuningJobsList />);
 
     await waitFor(() => {
-      expect(screen.getByText('No fine-tuning jobs found')).toBeInTheDocument();
+      expect(
+        screen.getByText('No running fine-tuning jobs found')
+      ).toBeInTheDocument();
     });
   });
 });
