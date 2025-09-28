@@ -1,110 +1,175 @@
-# Prisma Postgres Example: Next.js 15 Starter (Turbopack, Node.js, ESM)
+# OpenAI Vision Fine-tuning GUI
 
-This project showcases how to use the Prisma ORM with Prisma Postgres in an ESM Next.js application.
+A web application for managing image datasets and submitting them to OpenAI for vision model fine-tuning. This tool provides an intuitive interface to upload images, add annotations, and generate training data in the format required by OpenAI's fine-tuning API.
 
-## Prerequisites
+## What This Project Does
 
-To successfully run the project, you will need the following:
+This application helps you:
 
-- Two **Prisma Postgres** connection strings:
-  - Your **Prisma Postgres + Accelerate connection string** (containing your **Prisma API key**) which you can get by enabling Postgres in a project in your [Prisma Data Platform](https://pris.ly/pdp) account. You will use this connection string to run Prisma migrations.
-  - Your **Prisma Postgres direct TCP connection string** which you will use with Prisma Client.
-    Learn more in the [docs](https://www.prisma.io/docs/postgres/database/direct-connections).
+- **Upload Images**: Drag and drop or select multiple images for your training dataset
+- **Add Annotations**: Edit image descriptions/annotations directly in the interface
+- **Manage Dataset**: View, edit, and delete images in a table format
+- **Generate Training Data**: Convert your images and annotations into OpenAI-compatible JSONL format
+- **Submit to OpenAI**: Send your dataset directly to OpenAI's fine-tuning API
+- **Track Jobs**: Monitor fine-tuning job status and access OpenAI platform links
+
+## Features
+
+- 🖼️ **Image Upload**: Support for multiple image formats (PNG, JPG, etc.)
+- ✏️ **Inline Editing**: Click to edit annotations directly in the table
+- 📊 **Dataset Management**: View file sizes, upload dates, and manage your collection
+- 🔄 **Real-time Updates**: Live preview of your dataset
+- 📤 **OpenAI Integration**: Direct submission to OpenAI fine-tuning API
+- 🎯 **Validation**: Ensures minimum 10 images required for fine-tuning
+- 📱 **Responsive Design**: Works on desktop and mobile devices
 
 ## Tech Stack
 
-- Next.js 15
-  - Runtime: Node.js 20.19.0
-  - Bundler: Turbopack (stable for `dev`, alpha for `build`)
-- ESM
-  - `package.json` contains `{ "type": "module" }`
-  - `next.config.js` -> `next.config.mjs`
-  - `postcss.config.js` -> `postcss.config.mjs`
-- Prisma Client with the `prisma-client` generator
-  See the [Prisma schema file](./prisma/schema.prisma) for details.
-  
-  ```prisma
-  generator client {
-    provider = "prisma-client"
-    output = "../lib/generated/prisma"
-    previewFeatures = ["driverAdapters", "queryCompiler"]
-    runtime = "nodejs"
-  }
-  ```
+- **Frontend**: Next.js 15 with React 19, TypeScript, Tailwind CSS
+- **Backend**: Next.js API routes with Prisma ORM
+- **Database**: PostgreSQL
+- **File Storage**: Local file system (configurable)
+- **UI Components**: Radix UI with custom styling
+- **Testing**: Jest with React Testing Library
 
-## Getting started
+## Prerequisites
 
-### 1. Clone the repository
+- Node.js 24+ 
+- PostgreSQL database
+- OpenAI API key (for fine-tuning submission)
+- pnpm package manager
 
-Clone the repository, navigate into it and install dependencies:
+## Setup Instructions
 
-```
-git clone git@github.com:prisma/prisma-examples.git --depth=1
-cd prisma-examples/generator-prisma-client/nextjs-starter-turbopack
+### 1. Clone and Install
+
+```bash
+git clone <your-repo-url>
+cd fine-tuning
 pnpm install
 ```
 
-### 2. Configure environment variables
+### 2. Environment Configuration
 
-Create a `.env` in the root of the project directory:
-
-```bash
-touch .env
-```
-
-Now, open the `.env` file and set the `DATABASE_URL` environment variables with the values of your connection string and your Prisma Postgres connection string:
+Create a `.env` file in the root directory:
 
 ```bash
-# .env
+# Database
+DATABASE_URL="postgresql://username:password@localhost:5432/fine_tuning_db"
 
-# Prisma Postgres connection string (used for migrations)
-DATABASE_URL="__YOUR_PRISMA_POSTGRES_CONNECTION_STRING__"
+# OpenAI API (for fine-tuning submission)
+OPENAI_API_KEY="your-openai-api-key"
 
-# Postgres connection string (used for queries by Prisma Client)
-DIRECT_URL="__YOUR_PRISMA_POSTGRES_DIRECT_CONNECTION_STRING__"
-
+# Application
 NEXT_PUBLIC_URL="http://localhost:3000"
 ```
 
-Note that `__YOUR_PRISMA_POSTGRES_CONNECTION_STRING__` is a placeholder value that you need to replace with the values of your Prisma Postgres + Accelerate connection string. Notice that the Accelerate connection string has the following structure: `prisma+postgres://accelerate.prisma-data.net/?api_key=<api_key_value>`.
+### 3. Database Setup
 
-Note that `__YOUR_PRISMA_POSTGRES_DIRECT_CONNECTION_STRING__` is a placeholder value that you need to replace with the values of your Prisma Postgres direct TCP connection string. The direct connection string has the following structure: `postgres://<username>:<password>@<host>:<port>/<database>`.
+Generate Prisma client and run migrations:
 
-### 3. Generate Prisma Client
-
-Run:
-
-```
+```bash
 pnpm prisma generate
-```
-
-### 4. Run a migration to create the database structure and seed the database
-
-The [Prisma schema file](./prisma/schema.prisma) contains a single `Quotes` model and a `QuoteKind` enum. You can map this model to the database and create the corresponding `Quotes` table using the following command:
-
-```
 pnpm prisma migrate dev --name init
 ```
 
-You now have an empty `Quotes` table in your database. Next, run the [seed script](./prisma/seed.ts) to create some sample records in the table:
+### 4. Start Development Server
 
-```
-pnpm prisma db seed
-```
-
-### 5. Start the app
-
-You can run the app with the following command:
-
-```
+```bash
 pnpm dev
 ```
 
-## Resources
+The application will be available at `http://localhost:3000`.
 
-- [Prisma Postgres documentation](https://www.prisma.io/docs/postgres)
-- Check out the [Prisma docs](https://www.prisma.io/docs)
-- [Join our community on Discord](https://pris.ly/discord?utm_source=github&utm_medium=prisma_examples&utm_content=next_steps_section) to share feedback and interact with other users.
-- [Subscribe to our YouTube channel](https://pris.ly/youtube?utm_source=github&utm_medium=prisma_examples&utm_content=next_steps_section) for live demos and video tutorials.
-- [Follow us on X](https://pris.ly/x?utm_source=github&utm_medium=prisma_examples&utm_content=next_steps_section) for the latest updates.
-- Report issues or ask [questions on GitHub](https://pris.ly/github?utm_source=github&utm_medium=prisma_examples&utm_content=next_steps_section).
+## How to Use
+
+### 1. Upload Images
+- Click "Add Images" button or drag and drop files
+- Select multiple images at once
+- Images are automatically validated (type and size limits)
+
+### 2. Add Annotations
+- Click on any annotation cell in the table to edit
+- Type your description of what's in the image
+- Press Enter to save, Escape to cancel
+- Use Tab to move between annotations
+
+### 3. Manage Your Dataset
+- View all uploaded images in the table
+- See file sizes, upload dates, and previews
+- Delete unwanted images
+- Edit annotations inline
+
+### 4. Submit for Fine-tuning
+- Ensure you have at least 10 images with annotations
+- Click "Submit to OpenAI" button
+- The app will generate JSONL training data
+- Submit directly to OpenAI's fine-tuning API
+- Get a link to monitor your job on OpenAI platform
+
+## API Endpoints
+
+- `GET /api/images` - Fetch all images
+- `POST /api/images` - Upload new image
+- `PUT /api/images/[id]` - Update image annotation
+- `DELETE /api/images/[id]` - Delete image
+- `POST /api/jobs/submit` - Submit dataset for fine-tuning
+
+## Development
+
+### Available Scripts
+
+```bash
+pnpm dev          # Start development server
+pnpm build        # Build for production
+pnpm start        # Start production server
+pnpm test         # Run tests
+pnpm test:watch   # Run tests in watch mode
+pnpm typecheck    # TypeScript type checking
+pnpm lint         # ESLint checking
+pnpm format       # Prettier formatting
+```
+
+### Testing
+
+The project includes comprehensive tests:
+
+```bash
+pnpm test         # Run all tests
+pnpm test:watch   # Watch mode for development
+```
+
+### Database Management
+
+```bash
+pnpm prisma studio    # Open Prisma Studio
+pnpm prisma migrate  # Run migrations
+pnpm prisma generate # Generate Prisma client
+```
+
+## File Structure
+
+```
+├── app/                 # Next.js app router
+│   ├── api/            # API routes
+│   └── page.tsx        # Main page
+├── components/         # React components
+│   ├── ui/            # Reusable UI components
+│   └── *.tsx          # Feature components
+├── lib/               # Utility libraries
+├── prisma/            # Database schema and migrations
+├── types/             # TypeScript type definitions
+└── uploads/           # Uploaded image storage
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

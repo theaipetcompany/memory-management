@@ -136,18 +136,18 @@ export function ImageTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Preview</TableHead>
-            <TableHead>Filename</TableHead>
-            <TableHead>Annotation</TableHead>
-            <TableHead>Size</TableHead>
-            <TableHead>Date</TableHead>
+            <TableHead className="w-[80px]">Preview</TableHead>
+            <TableHead className="w-[200px]">Filename</TableHead>
+            <TableHead className="w-[300px]">Annotation</TableHead>
+            <TableHead className="w-[100px]">Size</TableHead>
+            <TableHead className="w-[120px]">Date</TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {images.map((image) => (
             <TableRow key={image.id}>
-              <TableCell>
+              <TableCell className="w-[80px]">
                 <div className="w-16 h-16 relative">
                   <Image
                     src={getImageUrl(image.filePath)}
@@ -158,8 +158,10 @@ export function ImageTable({
                   />
                 </div>
               </TableCell>
-              <TableCell className="font-medium">{image.filename}</TableCell>
-              <TableCell>
+              <TableCell className="w-[200px] font-medium">
+                {image.filename}
+              </TableCell>
+              <TableCell className="w-[300px]">
                 {editingId === image.id ? (
                   <Input
                     ref={handleInputRef(image.id)}
@@ -190,9 +192,13 @@ export function ImageTable({
                   </div>
                 )}
               </TableCell>
-              <TableCell>{formatFileSize(image.fileSize)}</TableCell>
-              <TableCell>{formatDate(image.createdAt)}</TableCell>
-              <TableCell>
+              <TableCell className="w-[100px]">
+                {formatFileSize(image.fileSize)}
+              </TableCell>
+              <TableCell className="w-[120px]">
+                {formatDate(image.createdAt)}
+              </TableCell>
+              <TableCell className="w-[100px]">
                 <Button
                   variant="destructive"
                   size="sm"
