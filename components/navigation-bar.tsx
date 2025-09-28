@@ -25,14 +25,14 @@ export function NavigationBar() {
 
           <div className="flex items-center space-x-8">
             <Link
-              href="/"
+              href="/learning"
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/')
+                isActive('/learning')
                   ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white'
               }`}
             >
-              Upload Images
+              Learning
             </Link>
             <Link
               href="/jobs"
