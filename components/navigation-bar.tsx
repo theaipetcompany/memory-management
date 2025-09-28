@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { DarkModeToggle } from './dark-mode-toggle';
 
 export function NavigationBar() {
   const pathname = usePathname();
@@ -54,6 +55,7 @@ export function NavigationBar() {
             >
               Fine-tuning Jobs
             </Link>
+            <DarkModeToggle />
           </div>
         </div>
       </div>
