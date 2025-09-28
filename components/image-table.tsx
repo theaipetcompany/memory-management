@@ -35,8 +35,11 @@ export function ImageTable({
   onUpdateAnnotation,
 }: ImageTableProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingValue, setEditingValue] = useState('');
+  const [editingValues, setEditingValues] = useState<{ [key: string]: string }>(
+    {}
+  );
   const inputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const hasSelectedRef = useRef<{ [key: string]: boolean }>({});
   if (images.length === 0) {
     return (
       <div className="text-center py-8">
@@ -65,20 +68,36 @@ export function ImageTable({
 
   const handleEditStart = (id: string, currentAnnotation: string) => {
     setEditingId(id);
-    setEditingValue(currentAnnotation);
+    setEditingValues((prev) => ({
+      ...prev,
+      [id]: currentAnnotation,
+    }));
+    // Reset the selection flag when starting to edit
+    hasSelectedRef.current[id] = false;
   };
 
   const handleEditSave = async (id: string) => {
     if (onUpdateAnnotation) {
-      await onUpdateAnnotation(id, editingValue.trim());
+      const currentValue = editingValues[id] || '';
+      await onUpdateAnnotation(id, currentValue.trim());
     }
     setEditingId(null);
-    setEditingValue('');
+    setEditingValues((prev) => {
+      const newValues = { ...prev };
+      delete newValues[id];
+      return newValues;
+    });
   };
 
   const handleEditCancel = () => {
     setEditingId(null);
-    setEditingValue('');
+    setEditingValues((prev) => {
+      const newValues = { ...prev };
+      if (editingId) {
+        delete newValues[editingId];
+      }
+      return newValues;
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, id: string) => {
@@ -105,9 +124,10 @@ export function ImageTable({
 
   const handleInputRef = (id: string) => (el: HTMLInputElement | null) => {
     inputRefs.current[id] = el;
-    if (el && editingId === id) {
+    if (el && editingId === id && !hasSelectedRef.current[id]) {
       el.focus();
       el.select();
+      hasSelectedRef.current[id] = true;
     }
   };
 
@@ -143,8 +163,13 @@ export function ImageTable({
                 {editingId === image.id ? (
                   <Input
                     ref={handleInputRef(image.id)}
-                    value={editingValue}
-                    onChange={(e) => setEditingValue(e.target.value)}
+                    value={editingValues[image.id] || ''}
+                    onChange={(e) =>
+                      setEditingValues((prev) => ({
+                        ...prev,
+                        [image.id]: e.target.value,
+                      }))
+                    }
                     onKeyDown={(e) => handleKeyDown(e, image.id)}
                     onBlur={() => handleEditSave(image.id)}
                     className="w-full"

@@ -5,9 +5,9 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Accelerated Quotes',
-  description: 'Accelerate starter',
-}
+  title: 'OpenAI Vision Fine-tuning GUI',
+  description: 'Upload images with annotations for fine-tuning',
+};
 
 export default function RootLayout({
   children,
