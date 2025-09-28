@@ -102,4 +102,77 @@ describe('useDarkMode', () => {
 
     expect(mockDocumentElement.classList.add).toHaveBeenCalledWith('dark');
   });
+
+  it('should respect system preference when no theme is stored', () => {
+    localStorageMock.getItem.mockReturnValue(null);
+    // Mock matchMedia to return true for dark preference
+    const mockMatchMedia = jest.fn().mockImplementation((query) => ({
+      matches: query === '(prefers-color-scheme: dark)',
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    }));
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: mockMatchMedia,
+    });
+
+    const { result } = renderHook(() => useDarkMode());
+
+    expect(result.current.isDarkMode).toBe(true);
+    expect(mockDocumentElement.classList.add).toHaveBeenCalledWith('dark');
+  });
+
+  it('should not apply dark mode when system prefers light and no theme is stored', () => {
+    localStorageMock.getItem.mockReturnValue(null);
+    // Mock matchMedia to return false for dark preference
+    const mockMatchMedia = jest.fn().mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    }));
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: mockMatchMedia,
+    });
+
+    const { result } = renderHook(() => useDarkMode());
+
+    expect(result.current.isDarkMode).toBe(false);
+    expect(mockDocumentElement.classList.remove).toHaveBeenCalledWith('dark');
+  });
+
+  it('should prioritize saved theme over system preference', () => {
+    localStorageMock.getItem.mockReturnValue('light');
+    // Mock matchMedia to return true for dark preference (system prefers dark)
+    const mockMatchMedia = jest.fn().mockImplementation((query) => ({
+      matches: query === '(prefers-color-scheme: dark)',
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    }));
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: mockMatchMedia,
+    });
+
+    const { result } = renderHook(() => useDarkMode());
+
+    // Should be light mode despite system preferring dark
+    expect(result.current.isDarkMode).toBe(false);
+    expect(mockDocumentElement.classList.remove).toHaveBeenCalledWith('dark');
+  });
 });

@@ -12,7 +12,8 @@ export function useDarkMode() {
       '(prefers-color-scheme: dark)'
     ).matches;
 
-    const shouldBeDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+    const shouldBeDark =
+      savedTheme === 'dark' || (savedTheme === null && prefersDark);
 
     setIsDarkMode(shouldBeDark);
 
