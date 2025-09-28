@@ -3,8 +3,8 @@
 ## Core Requirements
 
 1. **Image Table**: Display images with filename, annotation, date
-2. **Add Image Modal**: Simple form to add new image with annotation
-3. **Submit Button**: Send ALL uploaded images to OpenAI API (no selection needed)
+2. **Add Images Modal**: Multi-file upload form to add multiple images with annotation
+3. **Submit Button**: Send ALL uploaded images to OpenAI API (minimum 10 required)
 
 ## Minimal Database Schema
 

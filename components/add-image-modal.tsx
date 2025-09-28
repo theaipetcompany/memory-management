@@ -13,20 +13,27 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface AddImageModalProps {
-  onAddImage: (data: { file: File; annotation: string }) => void;
+  onAddImages: (data: { files: File[]; annotation: string }) => void;
 }
 
-export function AddImageModal({ onAddImage }: AddImageModalProps) {
+export function AddImageModal({ onAddImages }: AddImageModalProps) {
   const [open, setOpen] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [annotation, setAnnotation] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const validateFile = (file: File): boolean => {
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file');
+  const validateFiles = (files: File[]): boolean => {
+    if (files.length === 0) {
+      setError('Please select at least one image file');
       return false;
+    }
+
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) {
+        setError(`"${file.name}" is not an image file`);
+        return false;
+      }
     }
     return true;
   };
@@ -43,13 +50,13 @@ export function AddImageModal({ onAddImage }: AddImageModalProps) {
     e.preventDefault();
     setError(null);
 
-    if (!file || !validateFile(file)) return;
+    if (!validateFiles(files)) return;
     if (!validateAnnotation(annotation)) return;
 
     setIsSubmitting(true);
     try {
-      await onAddImage({ file, annotation: annotation.trim() });
-      setFile(null);
+      await onAddImages({ files, annotation: annotation.trim() });
+      setFiles([]);
       setAnnotation('');
       setOpen(false);
     } catch (err) {
@@ -62,13 +69,13 @@ export function AddImageModal({ onAddImage }: AddImageModalProps) {
   const handleSubmitClick = async () => {
     setError(null);
 
-    if (!file || !validateFile(file)) return;
+    if (!validateFiles(files)) return;
     if (!validateAnnotation(annotation)) return;
 
     setIsSubmitting(true);
     try {
-      await onAddImage({ file, annotation: annotation.trim() });
-      setFile(null);
+      await onAddImages({ files, annotation: annotation.trim() });
+      setFiles([]);
       setAnnotation('');
       setOpen(false);
     } catch (err) {
@@ -79,9 +86,9 @@ export function AddImageModal({ onAddImage }: AddImageModalProps) {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
+    const selectedFiles = Array.from(e.target.files || []);
+    if (selectedFiles.length > 0) {
+      setFiles(selectedFiles);
       setError(null);
     }
   };
@@ -99,23 +106,30 @@ export function AddImageModal({ onAddImage }: AddImageModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Add Image</Button>
+        <Button>Add Images</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Image</DialogTitle>
+          <DialogTitle>Add New Images</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="file">Image File</Label>
+            <Label htmlFor="files">Image Files</Label>
             <Input
-              id="file"
-              name="file"
+              id="files"
+              name="files"
               type="file"
               accept="image/*"
+              multiple
               onChange={handleFileChange}
               required
             />
+            {files.length > 0 && (
+              <p className="text-sm text-gray-600">
+                Selected {files.length} file{files.length !== 1 ? 's' : ''}:{' '}
+                {files.map((f) => f.name).join(', ')}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="annotation">Annotation</Label>
@@ -160,7 +174,9 @@ export function AddImageModal({ onAddImage }: AddImageModalProps) {
               onClick={handleSubmitClick}
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Adding...' : 'Add'}
+              {isSubmitting
+                ? 'Adding...'
+                : `Add ${files.length} Image${files.length !== 1 ? 's' : ''}`}
             </Button>
           </div>
         </form>

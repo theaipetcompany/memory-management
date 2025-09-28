@@ -28,22 +28,31 @@ export function ImageManagement() {
     fetchImages();
   }, []);
 
-  const handleAddImage = async (data: { file: File; annotation: string }) => {
+  const handleAddImages = async (data: {
+    files: File[];
+    annotation: string;
+  }) => {
     try {
-      const formData = new FormData();
-      formData.append('file', data.file);
-      formData.append('annotation', data.annotation);
+      // Upload each file individually with the same annotation
+      for (const file of data.files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('annotation', data.annotation);
 
-      const result = await fetcher('/api/images', {
-        method: 'POST',
-        body: formData,
-      });
+        const result = await fetcher('/api/images', {
+          method: 'POST',
+          body: formData,
+        });
 
-      if (result !== null) {
-        await fetchImages(); // Refresh the images list
+        if (result === null) {
+          throw new Error(`Failed to upload ${file.name}`);
+        }
       }
+
+      await fetchImages(); // Refresh the images list
     } catch (error) {
-      console.error('Error adding image:', error);
+      console.error('Error adding images:', error);
+      throw error; // Re-throw to let the modal handle the error
     }
   };
 
@@ -67,7 +76,7 @@ export function ImageManagement() {
         <h2 className="text-xl font-semibold text-slate-800 dark:text-white">
           Images ({images.length})
         </h2>
-        <AddImageModal onAddImage={handleAddImage} />
+        <AddImageModal onAddImages={handleAddImages} />
       </div>
 
       {loading ? (

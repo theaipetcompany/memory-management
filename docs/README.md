@@ -8,7 +8,7 @@ Bare minimum OpenAI Vision Fine-tuning GUI - just a table, modal, and submit but
 
 ### 📋 [Minimal User Journey](./minimal-user-journey.md)
 
-Simple 3-step workflow: view images → add image → submit ALL images to OpenAI
+Simple 3-step workflow: view images → add multiple images → submit all images to OpenAI
 
 ### 🧪 [Minimal TDD Plan](./minimal-tdd.md)
 
@@ -21,8 +21,8 @@ Minimal database schema, API routes, and components
 ## Core Features
 
 1. **Image Table** - Display images with filename, annotation, date
-2. **Add Image Modal** - Simple form to add new image
-3. **Submit Button** - Send ALL uploaded images to OpenAI API (no selection needed)
+2. **Add Images Modal** - Multi-file upload form to add multiple images
+3. **Submit Button** - Send ALL uploaded images to OpenAI API (minimum 10 required)
 
 ## No Complex Features
 

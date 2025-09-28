@@ -12,17 +12,17 @@
 - Shows filename, annotation, date
 - Delete button for each image
 
-### 2. Add Image
+### 2. Add Images
 
-- User clicks "Add Image" button
-- Modal opens with file upload and annotation field
-- User selects image and enters annotation
-- Clicks "Add" to save
+- User clicks "Add Images" button
+- Modal opens with multi-file upload and annotation field
+- User selects multiple images and enters annotation
+- Clicks "Add X Images" to save all at once
 
 ### 3. Submit to OpenAI
 
 - User clicks "Submit to OpenAI" button
-- System submits ALL uploaded images to OpenAI API (no selection needed)
+- System submits ALL uploaded images to OpenAI API
 - Shows success/error message
 
 ## Success Metrics
