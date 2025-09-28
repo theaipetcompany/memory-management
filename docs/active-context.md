@@ -1,4 +1,4 @@
-# Active Context - OpenAI Vision Fine-tuning GUI
+# Active Context - Memory Management GUI
 
 ## Current Project State
 
@@ -73,7 +73,7 @@
 2. **Configuration Panel**: No model selection or training parameters UI
 3. **Data Validation**: Basic validation, could be more comprehensive
 
-### Required OpenAI Vision Fine-tuning Features
+### Required Memory Management Features
 
 Based on research, the following features are needed for complete OpenAI vision fine-tuning:
 

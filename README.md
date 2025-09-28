@@ -1,4 +1,4 @@
-# OpenAI Vision Fine-tuning GUI
+# Memory Management
 
 A web application for managing image datasets and submitting them to OpenAI for vision model fine-tuning. This tool provides an intuitive interface to upload images, add annotations, and generate training data in the format required by OpenAI's fine-tuning API.
 
@@ -34,7 +34,7 @@ This application helps you:
 
 ## Prerequisites
 
-- Node.js 24+ 
+- Node.js 24+
 - PostgreSQL database
 - OpenAI API key (for fine-tuning submission)
 - pnpm package manager
@@ -84,23 +84,27 @@ The application will be available at `http://localhost:3000`.
 ## How to Use
 
 ### 1. Upload Images
+
 - Click "Add Images" button or drag and drop files
 - Select multiple images at once
 - Images are automatically validated (type and size limits)
 
 ### 2. Add Annotations
+
 - Click on any annotation cell in the table to edit
 - Type your description of what's in the image
 - Press Enter to save, Escape to cancel
 - Use Tab to move between annotations
 
 ### 3. Manage Your Dataset
+
 - View all uploaded images in the table
 - See file sizes, upload dates, and previews
 - Delete unwanted images
 - Edit annotations inline
 
 ### 4. Submit for Fine-tuning
+
 - Ensure you have at least 10 images with annotations
 - Click "Submit to OpenAI" button
 - The app will generate JSONL training data

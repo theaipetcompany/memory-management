@@ -19,7 +19,7 @@ export function NavigationBar() {
               href="/"
               className="text-xl font-bold text-slate-800 dark:text-white hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
             >
-              OpenAI Vision Fine-tuning
+              Memory Management
             </Link>
           </div>
 

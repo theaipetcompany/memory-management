@@ -10,7 +10,7 @@ describe('NavigationBar', () => {
   it('renders navigation links', () => {
     render(<NavigationBar />);
 
-    expect(screen.getByText('OpenAI Vision Fine-tuning')).toBeInTheDocument();
+    expect(screen.getByText('Memory Management')).toBeInTheDocument();
     expect(screen.getByText('Upload Images')).toBeInTheDocument();
     expect(screen.getByText('Fine-tuning Jobs')).toBeInTheDocument();
   });

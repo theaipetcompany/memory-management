@@ -7,7 +7,7 @@ import { NavigationBar } from '@/components/navigation-bar';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'OpenAI Vision Fine-tuning GUI',
+  title: 'Memory Management',
   description: 'Upload images with annotations for fine-tuning',
 };
 

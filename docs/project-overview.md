@@ -2,7 +2,7 @@
 
 ## Overview
 
-Bare minimum OpenAI Vision Fine-tuning GUI - just a table, modal, and submit button.
+Bare minimum Memory Management GUI - just a table, modal, and submit button.
 
 ## Documentation
 

@@ -1,4 +1,4 @@
-# Bare Minimum OpenAI Vision Fine-tuning GUI
+# Bare Minimum Memory Management GUI
 
 ## Core Requirements
 
