@@ -1,4 +1,5 @@
 import { ImageManagement } from '@/components/image-management';
+import { FineTuningJobsList } from '@/components/fine-tuning-jobs-list';
 
 export default function Home() {
   return (
@@ -12,7 +13,10 @@ export default function Home() {
         </p>
       </div>
 
-      <ImageManagement />
+      <div className="w-full space-y-12">
+        <ImageManagement />
+        <FineTuningJobsList />
+      </div>
     </main>
   );
 }

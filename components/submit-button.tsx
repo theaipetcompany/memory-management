@@ -8,9 +8,10 @@ import { toast } from 'sonner';
 
 interface SubmitButtonProps {
   images: Image[];
+  onClearImages?: () => void;
 }
 
-export function SubmitButton({ images }: SubmitButtonProps) {
+export function SubmitButton({ images, onClearImages }: SubmitButtonProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [jobResult, setJobResult] = useState<{
     openaiJobId: string;
@@ -88,6 +89,11 @@ export function SubmitButton({ images }: SubmitButtonProps) {
           skippedCount > 0 ? ` (${skippedCount} skipped)` : ''
         }`,
       });
+
+      // Clear images after successful submission
+      if (onClearImages) {
+        onClearImages();
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       toast.error('Submission Failed', {

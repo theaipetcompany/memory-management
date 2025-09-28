@@ -25,6 +25,7 @@ export interface TrainingExample {
           text?: string;
           image_url?: {
             url: string;
+            detail?: string;
           };
         }>;
   }>;
@@ -101,6 +102,7 @@ export async function generateJSONL(
                 type: 'image_url',
                 image_url: {
                   url: dataUrl,
+                  detail: 'low',
                 },
               },
             ],

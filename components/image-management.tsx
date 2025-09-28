@@ -163,6 +163,24 @@ export function ImageManagement() {
     }
   };
 
+  const handleClearImages = async () => {
+    try {
+      const result = await fetcher('/api/images/clear', {
+        method: 'DELETE',
+      });
+
+      if (result !== null) {
+        await fetchImages(); // Refresh the images list
+        toast.success('All images cleared successfully');
+      }
+    } catch (error) {
+      console.error('Error clearing images:', error);
+      toast.error('Failed to clear images', {
+        duration: 5000,
+      });
+    }
+  };
+
   return (
     <div className="w-full max-w-6xl">
       <div className="flex justify-between items-center mb-6">
@@ -184,7 +202,7 @@ export function ImageManagement() {
             onUpdateAnnotation={handleUpdateAnnotation}
           />
           <div className="mt-6">
-            <SubmitButton images={images} />
+            <SubmitButton images={images} onClearImages={handleClearImages} />
           </div>
         </>
       )}

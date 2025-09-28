@@ -159,7 +159,7 @@ describe('SubmitButton', () => {
 
   test('should handle submission error', async () => {
     const { toast } = require('sonner');
-    
+
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
       json: () => Promise.resolve({ error: 'Submission failed' }),
@@ -173,7 +173,38 @@ describe('SubmitButton', () => {
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Submission Failed', {
         description: 'Submission failed',
+        duration: 5000,
       });
+    });
+  });
+
+  test('should call onClearImages after successful submission', async () => {
+    const mockOnClearImages = jest.fn();
+    const mockJob = {
+      id: 'job-123',
+      status: 'pending',
+      openaiJobId: 'ftjob-abc123',
+      createdAt: new Date(),
+      trainingDataSize: 10,
+    };
+
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(mockJob),
+    });
+
+    render(
+      <SubmitButton
+        images={mockImagesWithMinimum}
+        onClearImages={mockOnClearImages}
+      />
+    );
+
+    const button = screen.getByText('Submit 10 Images to OpenAI');
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(mockOnClearImages).toHaveBeenCalled();
     });
   });
 });
