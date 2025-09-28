@@ -8,7 +8,7 @@
     "compose": "docker compose -f ./docker/compose.dev.yaml --env-file .env",
     "dev": "pnpm compose up -d && pnpm run watch",
     "watch": "trap 'pnpm compose stop; exit 0' SIGINT; next dev --turbopack",
-    "build": "prisma generate && next build --turbopack",
+    "build": "prisma generate && next build",
     "ui": "pnpm dlx shadcn@latest",
     "start": "next start",
     "prisma": "prisma",
@@ -37,11 +37,11 @@
     "react-dom": "19.1.0",
     "react-hot-toast": "2.5.2",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss": "3.4.17",
+    "tailwindcss": "4.1.13",
     "zod": "3.25.71"
   },
   "devDependencies": {
-    "@tailwindcss/upgrade": "^4.1.13",
+    "@tailwindcss/postcss": "^4.1.13",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
