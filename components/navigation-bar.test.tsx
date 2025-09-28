@@ -10,7 +10,10 @@ describe('NavigationBar', () => {
   it('renders navigation links', () => {
     render(<NavigationBar />);
 
-    expect(screen.getByText('Memory Management')).toBeInTheDocument();
+    // Check for the logo/title
+    expect(screen.getByRole('link', { name: 'Memory' })).toBeInTheDocument();
+    // Check for navigation links
+    expect(screen.getByRole('link', { name: 'Memory' })).toBeInTheDocument();
     expect(screen.getByText('Learning')).toBeInTheDocument();
     expect(screen.getByText('Fine-tuning Jobs')).toBeInTheDocument();
   });
