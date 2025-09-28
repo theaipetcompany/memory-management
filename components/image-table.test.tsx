@@ -135,6 +135,39 @@ describe('ImageTable', () => {
     expect(secondInput).toBeInTheDocument();
   });
 
+  test('should navigate backwards with Shift+Tab key', async () => {
+    const user = userEvent.setup();
+    render(
+      <ImageTable
+        images={mockImages}
+        onDeleteImage={mockDeleteImage}
+        onUpdateAnnotation={mockUpdateAnnotation}
+      />
+    );
+
+    // Click on second annotation to start editing
+    const secondAnnotation = screen.getByText('A dog playing in the park');
+    await user.click(secondAnnotation);
+
+    // Should show input field
+    const input = screen.getByDisplayValue('A dog playing in the park');
+    expect(input).toBeInTheDocument();
+
+    // Press Shift+Tab to move to previous annotation
+    await user.keyboard('{Shift>}{Tab}{/Shift}');
+
+    await waitFor(() => {
+      expect(mockUpdateAnnotation).toHaveBeenCalledWith(
+        '2',
+        'A dog playing in the park'
+      );
+    });
+
+    // Should now be editing the first annotation
+    const firstInput = screen.getByDisplayValue('A cat sitting on a chair');
+    expect(firstInput).toBeInTheDocument();
+  });
+
   test('should show placeholder for empty annotations', () => {
     const imagesWithEmptyAnnotation = [
       {

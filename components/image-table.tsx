@@ -109,25 +109,45 @@ export function ImageTable({
       handleEditCancel();
     } else if (e.key === 'Tab') {
       e.preventDefault();
-      handleEditSave(id);
-      // Move to next annotation input
+      // Save current annotation without exiting edit mode
+      if (onUpdateAnnotation) {
+        const currentValue = editingValues[id] || '';
+        onUpdateAnnotation(id, currentValue.trim());
+      }
+
+      // Move to next/previous annotation input
       const currentIndex = images.findIndex((img) => img.id === id);
       const nextIndex = e.shiftKey ? currentIndex - 1 : currentIndex + 1;
+
       if (nextIndex >= 0 && nextIndex < images.length) {
         const nextId = images[nextIndex].id;
-        setTimeout(() => {
-          handleEditStart(nextId, images[nextIndex].annotation);
-        }, 0);
+        const nextAnnotation = images[nextIndex].annotation;
+
+        // Update editing values for the next field
+        setEditingValues((prev) => ({
+          ...prev,
+          [nextId]: nextAnnotation,
+        }));
+
+        // Switch to next field
+        setEditingId(nextId);
+        // Reset selection flag for the next field
+        hasSelectedRef.current[nextId] = false;
+      } else {
+        // If no next field, exit edit mode
+        handleEditSave(id);
       }
     }
   };
 
   const handleInputRef = (id: string) => (el: HTMLInputElement | null) => {
     inputRefs.current[id] = el;
-    if (el && editingId === id && !hasSelectedRef.current[id]) {
+    if (el && editingId === id) {
       el.focus();
-      el.select();
-      hasSelectedRef.current[id] = true;
+      if (!hasSelectedRef.current[id]) {
+        el.select();
+        hasSelectedRef.current[id] = true;
+      }
     }
   };
 
