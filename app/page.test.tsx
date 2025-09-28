@@ -44,6 +44,12 @@ jest.mock('@/components/submit-button', () => ({
   ),
 }));
 
+jest.mock('@/components/latest-running-job', () => ({
+  LatestRunningJob: () => (
+    <div data-testid="latest-running-job">Latest Running Job</div>
+  ),
+}));
+
 describe('Home Page Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -91,6 +97,22 @@ describe('Home Page Integration', () => {
     await waitFor(() => {
       const button = screen.getByText('Upload 10 more images (0/10)');
       expect(button).toBeDisabled();
+    });
+  });
+
+  test('should render latest running job component', async () => {
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve([]),
+      headers: {
+        get: () => 'application/json',
+      },
+    });
+
+    render(<Home />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('latest-running-job')).toBeInTheDocument();
     });
   });
 });

@@ -1,4 +1,5 @@
 import { ImageManagement } from '@/components/image-management';
+import { LatestRunningJob } from '@/components/latest-running-job';
 
 export default function Home() {
   return (
@@ -12,8 +13,9 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="w-full">
+      <div className="w-full space-y-12">
         <ImageManagement />
+        <LatestRunningJob />
       </div>
     </main>
   );
