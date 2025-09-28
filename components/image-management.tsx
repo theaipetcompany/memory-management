@@ -5,6 +5,7 @@ import { ImageTable } from '@/components/image-table';
 import { AddImageModal } from '@/components/add-image-modal';
 import { SubmitButton } from '@/components/submit-button';
 import { Image } from '@/components/image-table';
+import { fetcher } from '@/lib/fetcher';
 
 export function ImageManagement() {
   const [images, setImages] = useState<Image[]>([]);
@@ -13,19 +14,10 @@ export function ImageManagement() {
 
   const fetchImages = async () => {
     try {
-      const response = await fetch('/api/images');
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await fetcher<Image[]>('/api/images');
+      if (data) {
+        setImages(data);
       }
-
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Response is not JSON');
-      }
-
-      const data = await response.json();
-      setImages(data);
     } catch (error) {
       console.error('Error fetching images:', error);
     } finally {
@@ -43,12 +35,12 @@ export function ImageManagement() {
       formData.append('file', data.file);
       formData.append('annotation', data.annotation);
 
-      const response = await fetch('/api/images', {
+      const result = await fetcher('/api/images', {
         method: 'POST',
         body: formData,
       });
 
-      if (response.ok) {
+      if (result !== null) {
         await fetchImages(); // Refresh the images list
       }
     } catch (error) {
@@ -58,11 +50,11 @@ export function ImageManagement() {
 
   const handleDeleteImage = async (id: string) => {
     try {
-      const response = await fetch(`/api/images/${id}`, {
+      const result = await fetcher(`/api/images/${id}`, {
         method: 'DELETE',
       });
 
-      if (response.ok) {
+      if (result !== null) {
         await fetchImages(); // Refresh the images list
         // Remove from selected images if it was selected
         setSelectedImages((prev) => prev.filter((imgId) => imgId !== id));

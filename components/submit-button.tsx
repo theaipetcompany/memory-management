@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/image-table';
+import { fetcher } from '@/lib/fetcher';
 
 interface SubmitButtonProps {
   images: Image[];
@@ -29,20 +30,23 @@ export function SubmitButton({ images }: SubmitButtonProps) {
     setJobResult(null);
 
     try {
-      const response = await fetch('/api/jobs/submit', {
+      const job = await fetcher<{
+        openaiJobId: string;
+        id: string;
+        error?: string;
+      }>('/api/jobs/submit', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ imageIds: images.map((img) => img.id) }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Submission failed');
+      if (!job) {
+        throw new Error('Submission failed');
       }
 
-      const job = await response.json();
+      if (job.error) {
+        throw new Error(job.error);
+      }
+
       setJobResult({
         openaiJobId: job.openaiJobId,
         jobId: job.id,
