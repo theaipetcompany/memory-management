@@ -37,8 +37,8 @@ jest.mock('@/components/submit-button', () => ({
     <div data-testid="submit-button">
       <button disabled={images.length < 10}>
         {images.length < 10
-          ? `Select ${10 - images.length} more images (${images.length}/10)`
-          : `Submit ${images.length} Selected Images to OpenAI`}
+          ? `Upload ${10 - images.length} more images (${images.length}/10)`
+          : `Submit ${images.length} Images to OpenAI`}
       </button>
     </div>
   ),
@@ -72,7 +72,7 @@ describe('Home Page Integration', () => {
     await waitFor(() => {
       expect(screen.getByTestId('submit-button')).toBeInTheDocument();
       expect(
-        screen.getByText('Select 10 more images (0/10)')
+        screen.getByText('Upload 9 more images (1/10)')
       ).toBeInTheDocument();
     });
   });
@@ -89,7 +89,7 @@ describe('Home Page Integration', () => {
     render(<Home />);
 
     await waitFor(() => {
-      const button = screen.getByText('Select 10 more images (0/10)');
+      const button = screen.getByText('Upload 10 more images (0/10)');
       expect(button).toBeDisabled();
     });
   });

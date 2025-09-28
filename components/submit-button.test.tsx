@@ -44,20 +44,20 @@ describe('SubmitButton', () => {
   test('should render submit button', () => {
     render(<SubmitButton images={mockImages} />);
 
-    expect(screen.getByText('Select 8 more images (2/10)')).toBeInTheDocument();
+    expect(screen.getByText('Upload 8 more images (2/10)')).toBeInTheDocument();
   });
 
   test('should be disabled when no images', () => {
     render(<SubmitButton images={[]} />);
 
-    const button = screen.getByText('Select 10 more images (0/10)');
+    const button = screen.getByText('Upload 10 more images (0/10)');
     expect(button).toBeDisabled();
   });
 
   test('should be enabled when 10+ images exist', () => {
     render(<SubmitButton images={mockImagesWithMinimum} />);
 
-    const button = screen.getByText('Submit 10 Selected Images to OpenAI');
+    const button = screen.getByText('Submit 10 Images to OpenAI');
     expect(button).toBeEnabled();
   });
 
@@ -76,7 +76,7 @@ describe('SubmitButton', () => {
 
     render(<SubmitButton images={mockImagesWithMinimum} />);
 
-    const button = screen.getByText('Submit 10 Selected Images to OpenAI');
+    const button = screen.getByText('Submit 10 Images to OpenAI');
     fireEvent.click(button);
 
     await waitFor(() => {
@@ -85,6 +85,7 @@ describe('SubmitButton', () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           imageIds: mockImagesWithMinimum.map((img) => img.id),
         }),
@@ -109,7 +110,7 @@ describe('SubmitButton', () => {
 
     render(<SubmitButton images={mockImagesWithMinimum} />);
 
-    const button = screen.getByText('Submit 10 Selected Images to OpenAI');
+    const button = screen.getByText('Submit 10 Images to OpenAI');
     fireEvent.click(button);
 
     expect(screen.getByText('Submitting...')).toBeInTheDocument();
@@ -124,7 +125,7 @@ describe('SubmitButton', () => {
 
     render(<SubmitButton images={mockImagesWithMinimum} />);
 
-    const button = screen.getByText('Submit 10 Selected Images to OpenAI');
+    const button = screen.getByText('Submit 10 Images to OpenAI');
     fireEvent.click(button);
 
     await waitFor(() => {

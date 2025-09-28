@@ -22,7 +22,7 @@
 ### 3. Submit to OpenAI
 
 - User clicks "Submit to OpenAI" button
-- System submits all images to OpenAI API
+- System submits ALL uploaded images to OpenAI API (no selection needed)
 - Shows success/error message
 
 ## Success Metrics
@@ -37,5 +37,6 @@
 - Missing annotation → Highlight field
 - Upload failure → Retry option
 - No images → Disable submit button
+- Less than 10 images → Show warning message
 
 That's it. No authentication, no complex features, just the basics.

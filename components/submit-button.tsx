@@ -68,8 +68,8 @@ export function SubmitButton({ images }: SubmitButtonProps) {
         {isSubmitting
           ? 'Submitting...'
           : images.length < 10
-          ? `Select ${10 - images.length} more images (${images.length}/10)`
-          : `Submit ${images.length} Selected Images to OpenAI`}
+          ? `Upload ${10 - images.length} more images (${images.length}/10)`
+          : `Submit ${images.length} Images to OpenAI`}
       </Button>
       {images.length < 10 && (
         <p className="text-amber-600 text-sm text-center">

@@ -9,7 +9,6 @@ import { fetcher } from '@/lib/fetcher';
 
 export function ImageManagement() {
   const [images, setImages] = useState<Image[]>([]);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchImages = async () => {
@@ -56,29 +55,17 @@ export function ImageManagement() {
 
       if (result !== null) {
         await fetchImages(); // Refresh the images list
-        // Remove from selected images if it was selected
-        setSelectedImages((prev) => prev.filter((imgId) => imgId !== id));
       }
     } catch (error) {
       console.error('Error deleting image:', error);
     }
   };
 
-  const handleImageSelect = (imageId: string, selected: boolean) => {
-    setSelectedImages((prev) =>
-      selected ? [...prev, imageId] : prev.filter((id) => id !== imageId)
-    );
-  };
-
-  const selectedImagesData = images.filter((img) =>
-    selectedImages.includes(img.id)
-  );
-
   return (
     <div className="w-full max-w-4xl">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-slate-800 dark:text-white">
-          Images ({images.length}) - Selected: {selectedImages.length}
+          Images ({images.length})
         </h2>
         <AddImageModal onAddImage={handleAddImage} />
       </div>
@@ -89,14 +76,9 @@ export function ImageManagement() {
         </div>
       ) : (
         <>
-          <ImageTable
-            images={images}
-            onDeleteImage={handleDeleteImage}
-            selectedImages={selectedImages}
-            onImageSelect={handleImageSelect}
-          />
+          <ImageTable images={images} onDeleteImage={handleDeleteImage} />
           <div className="mt-6">
-            <SubmitButton images={selectedImagesData} />
+            <SubmitButton images={images} />
           </div>
         </>
       )}

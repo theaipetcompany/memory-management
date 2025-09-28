@@ -4,7 +4,7 @@
 
 1. **Image Table**: Display images with filename, annotation, date
 2. **Add Image Modal**: Simple form to add new image with annotation
-3. **Submit Button**: Send dataset to OpenAI API
+3. **Submit Button**: Send ALL uploaded images to OpenAI API (no selection needed)
 
 ## Minimal Database Schema
 
