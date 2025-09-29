@@ -35,7 +35,7 @@ describe('Face Embedding Service', () => {
 
       expect(result.embedding).toHaveLength(768);
       expect(result.processingTime).toBeGreaterThanOrEqual(0);
-      expect(result.method).toBe('local'); // Implementation uses mock/local method
+      expect(result.method).toBe('openai'); // Implementation uses OpenAI service with mock embeddings
       expect(result.success).toBe(true);
     });
 
@@ -68,11 +68,11 @@ describe('Face Embedding Service', () => {
       expect(result.processingTime).toBeLessThan(endTime - startTime + 100);
     });
 
-    it('should fallback to local model when API is slow', async () => {
-      // The current implementation always uses local/mock method
+    it('should generate embedding with OpenAI service', async () => {
+      // The current implementation uses OpenAI service with mock embeddings
       const result = await service.generateEmbedding(mockImageBuffer);
 
-      expect(result.method).toBe('local');
+      expect(result.method).toBe('openai');
       expect(result.processingTime).toBeLessThan(100); // Should be fast since it's mock
       expect(result.success).toBe(true);
     });

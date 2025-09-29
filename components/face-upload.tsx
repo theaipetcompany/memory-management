@@ -17,11 +17,13 @@ interface FaceUploadProps {
   onImageUpload: (file: File, name: string) => Promise<void>;
   onFaceDetected?: (faces: DetectedFace[]) => Promise<void>;
   onFaceLinked?: (name: string, faces: DetectedFace[]) => Promise<void>;
+  onRecognitionTest?: (file: File) => Promise<any>;
   loading?: boolean;
   error?: string;
   detectFaces?: (file: File) => Promise<DetectedFace[]>;
   showNameField?: boolean;
   showSubmitButton?: boolean;
+  mode?: 'learning' | 'testing';
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -31,11 +33,13 @@ export function FaceUpload({
   onImageUpload,
   onFaceDetected,
   onFaceLinked,
+  onRecognitionTest,
   loading = false,
   error,
   detectFaces,
   showNameField = true,
   showSubmitButton = true,
+  mode = 'learning',
 }: FaceUploadProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -46,6 +50,7 @@ export function FaceUpload({
   >(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [personName, setPersonName] = useState<string>('');
+  const [recognitionResult, setRecognitionResult] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateFile = (file: File): string | null => {
@@ -76,29 +81,43 @@ export function FaceUpload({
       setPreviewUrl(url);
 
       try {
-        // Face detection only (no upload yet)
-        if (detectFaces) {
-          const faces = await detectFaces(file);
-          setFaceDetectionResult(faces);
+        if (mode === 'testing' && onRecognitionTest) {
+          // Recognition testing mode
+          const result = await onRecognitionTest(file);
+          setRecognitionResult(result);
+          setFaceDetectionResult(null);
+        } else {
+          // Face detection only (no upload yet)
+          if (detectFaces) {
+            const faces = await detectFaces(file);
+            setFaceDetectionResult(faces);
 
-          if (onFaceDetected) {
-            await onFaceDetected(faces);
-          }
+            if (onFaceDetected) {
+              await onFaceDetected(faces);
+            }
 
-          // If we have a name and faces, trigger face linking
-          if (personName.trim() && onFaceLinked) {
-            await onFaceLinked(personName.trim(), faces);
+            // If we have a name and faces, trigger face linking
+            if (personName.trim() && onFaceLinked) {
+              await onFaceLinked(personName.trim(), faces);
+            }
           }
         }
       } catch (err) {
         setUploadError(
-          err instanceof Error ? err.message : 'Face detection failed'
+          err instanceof Error ? err.message : 'Processing failed'
         );
       } finally {
         setIsProcessing(false);
       }
     },
-    [onFaceDetected, onFaceLinked, detectFaces, personName]
+    [
+      onFaceDetected,
+      onFaceLinked,
+      onRecognitionTest,
+      detectFaces,
+      personName,
+      mode,
+    ]
   );
 
   const handleFileInputChange = (
@@ -141,6 +160,8 @@ export function FaceUpload({
       setPreviewUrl(null);
     }
     setUploadError(null);
+    setRecognitionResult(null);
+    setFaceDetectionResult(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -185,7 +206,7 @@ export function FaceUpload({
       </div>
 
       {/* Name Input Field */}
-      {showNameField && (
+      {showNameField && mode === 'learning' && (
         <div className="space-y-2">
           <Label htmlFor="person-name">Person Name *</Label>
           <Input
@@ -305,17 +326,67 @@ export function FaceUpload({
       )}
 
       {/* Face Detection Results */}
-      {selectedFile && !loading && !displayError && faceDetectionResult && (
-        <div className="text-center">
-          {faceDetectionResult.length === 0 ? (
-            <p className="text-sm text-yellow-600">
-              No faces detected in image.
-            </p>
+      {selectedFile &&
+        !loading &&
+        !displayError &&
+        faceDetectionResult &&
+        mode === 'learning' && (
+          <div className="text-center">
+            {faceDetectionResult.length === 0 ? (
+              <p className="text-sm text-yellow-600">
+                No faces detected in image.
+              </p>
+            ) : (
+              <p className="text-sm text-green-600">
+                {faceDetectionResult.length === 1
+                  ? '1 face detected'
+                  : `${faceDetectionResult.length} faces detected.`}
+              </p>
+            )}
+          </div>
+        )}
+
+      {/* Recognition Test Results */}
+      {mode === 'testing' && recognitionResult && !loading && !displayError && (
+        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <h4 className="font-semibold mb-2">Recognition Results</h4>
+          {recognitionResult.matches && recognitionResult.matches.length > 0 ? (
+            <div className="space-y-2">
+              {recognitionResult.matches
+                .slice(0, 3)
+                .map((match: any, index: number) => (
+                  <div
+                    key={index}
+                    className={`p-2 rounded border ${
+                      index === 0
+                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                        : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">{match.name}</span>
+                      <span
+                        className={`text-sm px-2 py-1 rounded ${
+                          match.confidence === 'high'
+                            ? 'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200'
+                            : match.confidence === 'medium'
+                            ? 'bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200'
+                            : 'bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200'
+                        }`}
+                      >
+                        {Math.round(match.similarity * 100)}% match
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {match.metadata.relationshipType} • Last seen:{' '}
+                      {new Date(match.metadata.lastSeen).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))}
+            </div>
           ) : (
-            <p className="text-sm text-green-600">
-              {faceDetectionResult.length === 1
-                ? '1 face detected'
-                : `${faceDetectionResult.length} faces detected.`}
+            <p className="text-sm text-muted-foreground">
+              No matching faces found in memory.
             </p>
           )}
         </div>

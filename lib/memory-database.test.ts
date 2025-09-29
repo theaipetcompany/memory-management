@@ -22,8 +22,8 @@ import {
 } from '@/types/memory';
 
 // Mock Prisma client
-jest.mock('@/lib/prisma/client', () => ({
-  PrismaClient: jest.fn().mockImplementation(() => ({
+jest.mock('@/lib/prisma/client', () => {
+  const mockPrisma = {
     memoryEntry: {
       create: jest.fn(),
       findUnique: jest.fn(),
@@ -36,17 +36,28 @@ jest.mock('@/lib/prisma/client', () => ({
       findMany: jest.fn(),
     },
     $queryRaw: jest.fn(),
-  })),
-}));
+  };
+
+  return {
+    PrismaClient: jest.fn(() => mockPrisma),
+  };
+});
+
+// Import after mock is defined
+import { PrismaClient } from '@/lib/prisma/client';
 
 describe('Memory Database Operations', () => {
-  let mockPrisma: any;
-
   beforeEach(() => {
-    const { PrismaClient } = require('@/lib/prisma/client');
-    mockPrisma = new PrismaClient();
     jest.clearAllMocks();
   });
+
+  // Get access to the mocked Prisma instance
+  const getMockPrisma = () => {
+    const MockedPrismaClient = PrismaClient as jest.MockedClass<
+      typeof PrismaClient
+    >;
+    return new MockedPrismaClient() as jest.Mocked<PrismaClient>;
+  };
 
   describe('createMemoryEntry', () => {
     it('should create a new memory entry with embedding', async () => {
@@ -76,6 +87,7 @@ describe('Memory Database Operations', () => {
         updatedAt: new Date('2024-01-01'),
       };
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.memoryEntry.create.mockResolvedValue(mockCreatedEntry);
 
       const result = await createMemoryEntry(memoryData);
@@ -158,6 +170,7 @@ describe('Memory Database Operations', () => {
         updatedAt: new Date('2024-01-01'),
       };
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.memoryEntry.create.mockResolvedValue(mockCreatedEntry);
 
       const result = await createMemoryEntry(memoryData);
@@ -193,6 +206,7 @@ describe('Memory Database Operations', () => {
         },
       ];
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.memoryEntry.findMany.mockResolvedValue(mockMemories);
 
       const results = await findSimilarMemories(queryEmbedding, threshold);
@@ -208,6 +222,7 @@ describe('Memory Database Operations', () => {
       const queryEmbedding = new Array(EMBEDDING_DIMENSION).fill(0.9); // Very different embedding
       const threshold = 0.8;
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.memoryEntry.findMany.mockResolvedValue([]);
 
       const results = await findSimilarMemories(queryEmbedding, threshold);
@@ -219,6 +234,7 @@ describe('Memory Database Operations', () => {
       const queryEmbedding = new Array(EMBEDDING_DIMENSION).fill(0.1);
       const topK = 3;
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.memoryEntry.findMany.mockResolvedValue([]);
 
       await findSimilarMemories(queryEmbedding, 0.5, topK);
@@ -261,6 +277,7 @@ describe('Memory Database Operations', () => {
         updatedAt: new Date('2024-01-02'),
       };
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.memoryEntry.update.mockResolvedValue(mockUpdatedEntry);
 
       const result = await updateMemoryEntry(memoryId, updates);
@@ -292,6 +309,7 @@ describe('Memory Database Operations', () => {
         updatedAt: new Date('2024-01-01'),
       };
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.memoryEntry.update.mockResolvedValue(mockUpdatedEntry);
 
       const result = await updateMemoryEntry(memoryId, updates);
@@ -332,6 +350,7 @@ describe('Memory Database Operations', () => {
         updatedAt: new Date('2024-01-01'),
       };
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.memoryEntry.findUnique.mockResolvedValue(mockEntry);
 
       const result = await getMemoryEntry(memoryId);
@@ -344,6 +363,7 @@ describe('Memory Database Operations', () => {
     it('should return null when memory entry not found', async () => {
       const memoryId = 'non-existent-id';
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.memoryEntry.findUnique.mockResolvedValue(null);
 
       const result = await getMemoryEntry(memoryId);
@@ -387,6 +407,7 @@ describe('Memory Database Operations', () => {
         },
       ];
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.memoryEntry.findMany.mockResolvedValue(mockEntries);
 
       const results = await getAllMemoryEntries();
@@ -404,6 +425,7 @@ describe('Memory Database Operations', () => {
     it('should delete memory entry by ID', async () => {
       const memoryId = 'test-id-1';
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.memoryEntry.delete.mockResolvedValue({});
 
       await deleteMemoryEntry(memoryId);
@@ -436,6 +458,7 @@ describe('Memory Database Operations', () => {
         createdAt: new Date('2024-01-01'),
       };
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.interaction.create.mockResolvedValue(mockInteraction);
 
       const result = await createInteraction(interactionData);
@@ -458,6 +481,8 @@ describe('Memory Database Operations', () => {
           | 'conversation',
       };
 
+      // mockPrisma is defined at module level
+
       await expect(createInteraction(invalidData)).rejects.toThrow(
         'Memory entry ID is required'
       );
@@ -471,6 +496,8 @@ describe('Memory Database Operations', () => {
           | 'recognition'
           | 'conversation',
       };
+
+      // mockPrisma is defined at module level
 
       await expect(createInteraction(invalidData)).rejects.toThrow(
         'Invalid interaction type'
@@ -504,6 +531,7 @@ describe('Memory Database Operations', () => {
         },
       ];
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.interaction.findMany.mockResolvedValue(mockInteractions);
 
       const results = await getInteractionsByMemoryId(memoryEntryId);
@@ -522,6 +550,7 @@ describe('Memory Database Operations', () => {
     it('should increment interaction count and update last_seen', async () => {
       const memoryEntryId = 'test-id-1';
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.memoryEntry.update.mockResolvedValue({});
 
       await incrementInteractionCount(memoryEntryId);
@@ -559,6 +588,7 @@ describe('Memory Database Operations', () => {
         },
       ];
 
+      const mockPrisma = getMockPrisma();
       mockPrisma.memoryEntry.findMany.mockResolvedValue(mockEntries);
 
       const results = await searchMemoriesByName(searchName);

@@ -150,8 +150,9 @@ export async function updateMemoryEntry(
   updates: UpdateMemoryEntryData
 ): Promise<MemoryEntry> {
   if (
-    (updates.embedding && !Array.isArray(updates.embedding)) ||
-    updates.embedding?.length !== EMBEDDING_DIMENSION
+    updates.embedding &&
+    (!Array.isArray(updates.embedding) ||
+      updates.embedding.length !== EMBEDDING_DIMENSION)
   ) {
     throw new Error(
       `Embedding must be a ${EMBEDDING_DIMENSION}-dimensional vector`

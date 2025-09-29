@@ -19,6 +19,11 @@ export default function MemoryPage() {
   } = useMemories();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isRecognitionTesting, setIsRecognitionTesting] = useState(false);
+  const [recognitionError, setRecognitionError] = useState<string | null>(null);
+  const [recognitionMode, setRecognitionMode] = useState<
+    'learning' | 'testing'
+  >('learning');
 
   const handleImageUpload = async (file: File, name: string) => {
     setIsUploading(true);
@@ -73,6 +78,35 @@ export default function MemoryPage() {
   const handleViewInteractions = (id: string) => {
     const memory = memories.find((m) => m.id === id);
     console.log('View interactions for:', memory?.name);
+  };
+
+  const handleRecognitionTest = async (file: File) => {
+    setIsRecognitionTesting(true);
+    setRecognitionError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch('/api/recognition/identify', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Recognition failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Recognition test failed';
+      setRecognitionError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setIsRecognitionTesting(false);
+    }
   };
 
   return (
@@ -144,21 +178,57 @@ export default function MemoryPage() {
               />
             </section>
 
-            {/* Face Upload Testing */}
+            {/* Face Recognition Testing */}
             <section>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                Face Recognition Testing
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Face Recognition Testing
+                </h2>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setRecognitionMode('learning')}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                      recognitionMode === 'learning'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    Learning Mode
+                  </button>
+                  <button
+                    onClick={() => setRecognitionMode('testing')}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                      recognitionMode === 'testing'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    Testing Mode
+                  </button>
+                </div>
+              </div>
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <FaceUpload
-                  onImageUpload={handleImageUpload}
-                  onFaceDetected={handleFaceDetected}
-                  onFaceLinked={handleFaceLinked}
-                  loading={isUploading}
-                  error={uploadError || undefined}
-                  showNameField={true}
-                  showSubmitButton={true}
-                />
+                {recognitionMode === 'learning' ? (
+                  <FaceUpload
+                    onImageUpload={handleImageUpload}
+                    onFaceDetected={handleFaceDetected}
+                    onFaceLinked={handleFaceLinked}
+                    loading={isUploading}
+                    error={uploadError || undefined}
+                    showNameField={true}
+                    showSubmitButton={true}
+                    mode="learning"
+                  />
+                ) : (
+                  <FaceUpload
+                    onRecognitionTest={handleRecognitionTest}
+                    loading={isRecognitionTesting}
+                    error={recognitionError || undefined}
+                    showNameField={false}
+                    showSubmitButton={false}
+                    mode="testing"
+                  />
+                )}
               </div>
             </section>
           </div>

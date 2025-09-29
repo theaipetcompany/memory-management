@@ -16,6 +16,7 @@ jest.mock('@/lib/memory-database', () => ({
   deleteMemoryEntry: jest.fn(),
   getMemoryEntry: jest.fn(),
   getAllMemoryEntries: jest.fn(),
+  findSimilarMemories: jest.fn(),
   createInteraction: jest.fn(),
   incrementInteractionCount: jest.fn(),
 }));
@@ -35,7 +36,7 @@ jest.mock('@/lib/similarity-search', () => ({
   },
 }));
 
-describe('Memory Management Service', () => {
+describe('Memory Management Service - End-to-End Tests', () => {
   let service: MemoryManagementService;
   let mockMemoryEntry: MemoryEntry;
   let mockInteraction: InteractionRecord;
@@ -43,6 +44,9 @@ describe('Memory Management Service', () => {
   beforeEach(() => {
     service =
       new (require('@/lib/memory-management').MemoryManagementService)();
+
+    // Reset all mocks
+    jest.clearAllMocks();
 
     mockMemoryEntry = {
       id: 'memory-1',
@@ -335,6 +339,226 @@ describe('Memory Management Service', () => {
       expect(result.memoryEntry).toBeUndefined();
       expect(result.confidence).toBe(0.5);
       expect(result.similarMemories).toHaveLength(1);
+    });
+  });
+
+  describe('Complete Memory Management Flow', () => {
+    it('should handle complete friend meeting and recognition flow', async () => {
+      // Step 1: Create a new memory (friend meeting)
+      const mockEmbedding = new Array(768).fill(0.2);
+      mockGenerateEmbedding.mockResolvedValue({
+        embedding: mockEmbedding,
+        processingTime: 150,
+        method: 'openai',
+        success: true,
+      });
+
+      const { createMemoryEntry } = require('@/lib/memory-database');
+      createMemoryEntry.mockResolvedValue({
+        id: 'new-memory-1',
+        name: 'John',
+        embedding: JSON.stringify(mockEmbedding),
+        firstMet: new Date('2024-01-01'),
+        lastSeen: new Date('2024-01-01'),
+        interactionCount: 0,
+        introducedBy: 'Alice',
+        notes: 'Met at coffee shop',
+        preferences: ['coffee', 'books'],
+        tags: ['friend', 'new'],
+        relationshipType: 'friend',
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+      });
+
+      const mockImageBuffer = Buffer.from('fake-image-data');
+      const newMemory = await service.createMemory({
+        name: 'John',
+        imageBuffer: mockImageBuffer,
+        introducedBy: 'Alice',
+        notes: 'Met at coffee shop',
+        preferences: ['coffee', 'books'],
+        tags: ['friend', 'new'],
+        relationshipType: 'friend',
+      });
+
+      expect(createMemoryEntry).toHaveBeenCalledWith({
+        name: 'John',
+        embedding: mockEmbedding,
+        introducedBy: 'Alice',
+        notes: 'Met at coffee shop',
+        preferences: ['coffee', 'books'],
+        tags: ['friend', 'new'],
+        relationshipType: 'friend',
+      });
+
+      // Step 2: Record an interaction
+      const {
+        createInteraction,
+        incrementInteractionCount,
+      } = require('@/lib/memory-database');
+      createInteraction.mockResolvedValue({
+        id: 'interaction-1',
+        memoryEntryId: 'new-memory-1',
+        interactionType: 'meeting',
+        context: 'First meeting at coffee shop',
+        responseGenerated: 'Hello John! Nice to meet you.',
+        emotion: 'friendly',
+        actions: ['greet', 'introduce'],
+        createdAt: new Date('2024-01-01'),
+      });
+      incrementInteractionCount.mockResolvedValue(undefined);
+
+      const interaction = await service.recordInteraction({
+        memoryEntryId: 'new-memory-1',
+        interactionType: 'meeting',
+        context: 'First meeting at coffee shop',
+        responseGenerated: 'Hello John! Nice to meet you.',
+        emotion: 'friendly',
+        actions: ['greet', 'introduce'],
+      });
+
+      expect(createInteraction).toHaveBeenCalledWith({
+        memoryEntryId: 'new-memory-1',
+        interactionType: 'meeting',
+        context: 'First meeting at coffee shop',
+        responseGenerated: 'Hello John! Nice to meet you.',
+        emotion: 'friendly',
+        actions: ['greet', 'introduce'],
+      });
+      expect(incrementInteractionCount).toHaveBeenCalledWith('new-memory-1');
+
+      // Step 3: Later recognition of the same person
+      const { findSimilarMemories } = require('@/lib/memory-database');
+      findSimilarMemories.mockResolvedValue([
+        {
+          id: 'new-memory-1',
+          similarity: 0.95,
+          metadata: {
+            id: 'new-memory-1',
+            name: 'John',
+            embedding: mockEmbedding,
+            firstMet: new Date('2024-01-01'),
+            lastSeen: new Date('2024-01-01'),
+            interactionCount: 1,
+            introducedBy: 'Alice',
+            notes: 'Met at coffee shop',
+            preferences: ['coffee', 'books'],
+            tags: ['friend', 'new'],
+            relationshipType: 'friend',
+            createdAt: new Date('2024-01-01'),
+            updatedAt: new Date('2024-01-01'),
+          },
+        },
+      ]);
+
+      const { SimilaritySearchService } = require('@/lib/similarity-search');
+      SimilaritySearchService.findSimilarFaces.mockResolvedValue([
+        {
+          id: 'new-memory-1',
+          similarity: 0.95,
+          metadata: {
+            id: 'new-memory-1',
+            name: 'John',
+            embedding: mockEmbedding,
+            firstMet: new Date('2024-01-01'),
+            lastSeen: new Date('2024-01-01'),
+            interactionCount: 1,
+            introducedBy: 'Alice',
+            notes: 'Met at coffee shop',
+            preferences: ['coffee', 'books'],
+            tags: ['friend', 'new'],
+            relationshipType: 'friend',
+            createdAt: new Date('2024-01-01'),
+            updatedAt: new Date('2024-01-01'),
+          },
+        },
+      ]);
+
+      const recognitionResult = await service.recognizeFace(
+        mockImageBuffer,
+        0.8
+      );
+
+      expect(recognitionResult.recognized).toBe(true);
+      expect(recognitionResult.memoryEntry?.name).toBe('John');
+      expect(recognitionResult.confidence).toBe(0.95);
+      expect(recognitionResult.similarMemories).toHaveLength(1);
+    });
+
+    it('should handle memory consolidation and statistics', async () => {
+      // Setup multiple memories
+      const { getAllMemoryEntries } = require('@/lib/memory-database');
+      const mockMemories = [
+        {
+          id: 'memory-1',
+          name: 'Alice',
+          embedding: new Array(768).fill(0.1),
+          firstMet: new Date('2024-01-01'),
+          lastSeen: new Date('2024-01-15'),
+          interactionCount: 5,
+          introducedBy: 'Bob',
+          notes: 'Good friend',
+          preferences: ['tea', 'music'],
+          tags: ['friend', 'close'],
+          relationshipType: 'friend',
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-15'),
+        },
+        {
+          id: 'memory-2',
+          name: 'Bob',
+          embedding: new Array(768).fill(0.2),
+          firstMet: new Date('2024-01-05'),
+          lastSeen: new Date('2024-01-20'),
+          interactionCount: 3,
+          introducedBy: 'Alice',
+          notes: 'Colleague',
+          preferences: ['coffee', 'sports'],
+          tags: ['colleague', 'tennis'],
+          relationshipType: 'acquaintance',
+          createdAt: new Date('2024-01-05'),
+          updatedAt: new Date('2024-01-20'),
+        },
+      ];
+
+      getAllMemoryEntries.mockResolvedValue(mockMemories);
+
+      const stats = await service.getMemoryStats();
+
+      expect(stats.totalMemories).toBe(2);
+      expect(stats.totalInteractions).toBe(8);
+      expect(stats.averageInteractionsPerMemory).toBe(4.0);
+      expect(stats.relationshipTypeCounts.friend).toBe(1);
+      expect(stats.relationshipTypeCounts.acquaintance).toBe(1);
+    });
+
+    it('should handle search functionality across memories', async () => {
+      const { getAllMemoryEntries } = require('@/lib/memory-database');
+      const mockMemories = [
+        {
+          id: 'memory-1',
+          name: 'Alice Johnson',
+          embedding: new Array(768).fill(0.1),
+          firstMet: new Date('2024-01-01'),
+          lastSeen: new Date('2024-01-15'),
+          interactionCount: 5,
+          introducedBy: 'Bob',
+          notes: 'Good friend from college',
+          preferences: ['tea', 'music'],
+          tags: ['friend', 'close', 'college'],
+          relationshipType: 'friend',
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-15'),
+        },
+      ];
+
+      getAllMemoryEntries.mockResolvedValue(mockMemories);
+
+      const searchResults = await service.searchMemories('college');
+
+      expect(searchResults).toHaveLength(1);
+      expect(searchResults[0].name).toBe('Alice Johnson');
+      expect(searchResults[0].tags).toContain('college');
     });
   });
 });
