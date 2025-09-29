@@ -32,6 +32,7 @@ model Job {
 model MemoryEntry {
   id               String   @id @default(cuid())
   name             String
+  embedding        String   // Store as JSON string for now, will be converted to vector in migration
   firstMet         DateTime @default(now())
   lastSeen         DateTime @default(now())
   interactionCount Int      @default(0)

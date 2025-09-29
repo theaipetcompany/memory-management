@@ -1,9 +1,11 @@
-// Core types for AI Pet Memory system
+/**
+ * Core types and interfaces for the AI Pet Memory system
+ */
 
 export interface MemoryEntry {
   id: string;
   name: string;
-  embedding: number[]; // 768-dimensional vector
+  embedding: number[]; // 768-dimensional vector from OpenAI vision API
   firstMet: Date;
   lastSeen: Date;
   interactionCount: number;
@@ -64,65 +66,43 @@ export interface CreateInteractionData {
   actions?: string[];
 }
 
-export interface FaceRecognitionResult {
-  recognized: boolean;
-  memoryEntry?: MemoryEntry;
-  confidence: number;
-  similarMemories: SimilaritySearchResult[];
-}
-
-export interface EmbeddingGenerationResult {
-  embedding: number[];
-  processingTime: number;
-  success: boolean;
-  error?: string;
-}
-
-// Constants
-export const EMBEDDING_DIMENSION = 768;
-export const SIMILARITY_THRESHOLD = 0.8;
-export const MAX_SIMILARITY_RESULTS = 10;
+// Constants for embedding dimensions
+export const EMBEDDING_DIMENSION = 768; // OpenAI vision API embedding dimension
+export const SIMILARITY_THRESHOLD = 0.8; // Default similarity threshold for recognition
+export const MAX_SEARCH_RESULTS = 10; // Default maximum number of search results
 
 // Validation helpers
-export function validateEmbedding(
-  embedding: number[] | null | undefined
-): boolean {
-  if (!embedding || !Array.isArray(embedding)) {
-    return false;
-  }
-  return (
-    embedding.length === EMBEDDING_DIMENSION &&
-    embedding.every((val) => typeof val === 'number' && !isNaN(val))
-  );
+export function validateEmbedding(embedding: number[]): boolean {
+  return Array.isArray(embedding) && embedding.length === EMBEDDING_DIMENSION;
 }
 
-export function validateMemoryEntryData(data: CreateMemoryEntryData): string[] {
-  const errors: string[] = [];
-
+export function validateMemoryEntryData(data: CreateMemoryEntryData): void {
   if (!data.name || data.name.trim().length === 0) {
-    errors.push('Name is required');
+    throw new Error('Name is required');
   }
 
-  if (!data.embedding || !validateEmbedding(data.embedding)) {
-    errors.push(
+  if (!validateEmbedding(data.embedding)) {
+    throw new Error(
       `Embedding must be a ${EMBEDDING_DIMENSION}-dimensional vector`
     );
-  }
-
-  if (data.preferences && !Array.isArray(data.preferences)) {
-    errors.push('Preferences must be an array');
-  }
-
-  if (data.tags && !Array.isArray(data.tags)) {
-    errors.push('Tags must be an array');
   }
 
   if (
     data.relationshipType &&
     !['friend', 'family', 'acquaintance'].includes(data.relationshipType)
   ) {
-    errors.push('Relationship type must be friend, family, or acquaintance');
+    throw new Error('Invalid relationship type');
+  }
+}
+
+export function validateInteractionData(data: CreateInteractionData): void {
+  if (!data.memoryEntryId || data.memoryEntryId.trim().length === 0) {
+    throw new Error('Memory entry ID is required');
   }
 
-  return errors;
+  if (
+    !['meeting', 'recognition', 'conversation'].includes(data.interactionType)
+  ) {
+    throw new Error('Invalid interaction type');
+  }
 }
