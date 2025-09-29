@@ -5,10 +5,10 @@ const memoryService = new MemoryManagementService();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { memoryId: string } }
+  { params }: { params: Promise<{ memoryId: string }> }
 ) {
   try {
-    const { memoryId } = params;
+    const { memoryId } = await params;
     const { searchParams } = new URL(request.url);
 
     // Extract query parameters
