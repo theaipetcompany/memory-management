@@ -22,15 +22,15 @@ import {
 } from '@/types/memory';
 
 // Mock Prisma client
-const mockMemoryEntryCreate = jest.fn();
-const mockMemoryEntryFindUnique = jest.fn();
-const mockMemoryEntryFindMany = jest.fn();
-const mockMemoryEntryUpdate = jest.fn();
-const mockMemoryEntryDelete = jest.fn();
-const mockInteractionCreate = jest.fn();
-const mockInteractionFindMany = jest.fn();
-
 jest.mock('@/lib/prisma/client', () => {
+  const mockMemoryEntryCreate = jest.fn();
+  const mockMemoryEntryFindUnique = jest.fn();
+  const mockMemoryEntryFindMany = jest.fn();
+  const mockMemoryEntryUpdate = jest.fn();
+  const mockMemoryEntryDelete = jest.fn();
+  const mockInteractionCreate = jest.fn();
+  const mockInteractionFindMany = jest.fn();
+
   const mockPrisma = {
     memoryEntry: {
       create: mockMemoryEntryCreate,
@@ -50,6 +50,24 @@ jest.mock('@/lib/prisma/client', () => {
     PrismaClient: jest.fn(() => mockPrisma),
   };
 });
+
+// Extract mock functions for easier access in tests
+const { PrismaClient: MockedPrismaClient } = require('@/lib/prisma/client');
+
+const mockPrisma = new MockedPrismaClient();
+const {
+  memoryEntry: {
+    create: mockMemoryEntryCreate,
+    findUnique: mockMemoryEntryFindUnique,
+    findMany: mockMemoryEntryFindMany,
+    update: mockMemoryEntryUpdate,
+    delete: mockMemoryEntryDelete,
+  },
+  interaction: {
+    create: mockInteractionCreate,
+    findMany: mockInteractionFindMany,
+  },
+} = mockPrisma;
 
 // Import after mock is defined
 import { PrismaClient } from '@/lib/prisma/client';

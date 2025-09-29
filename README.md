@@ -60,6 +60,9 @@ DATABASE_URL="postgresql://username:password@localhost:5432/fine_tuning_db"
 # OpenAI API (for fine-tuning submission)
 OPENAI_API_KEY="your-openai-api-key"
 
+# Test Mode Configuration (for face recognition testing)
+ENABLE_TEST_EMBEDDINGS=true
+
 # Application
 NEXT_PUBLIC_URL="http://localhost:3000"
 ```
@@ -111,6 +114,34 @@ The application will be available at `http://localhost:3000`.
 - Submit directly to OpenAI's fine-tuning API
 - Get a link to monitor your job on OpenAI platform
 
+## Face Recognition Testing
+
+This application includes a face recognition system that allows you to:
+
+- **Learning Mode**: Upload face images and create memory entries for people
+- **Testing Mode**: Test face recognition by uploading images and seeing if they match existing memories
+
+### Setting up Test Data
+
+To test face recognition, you need to seed your database with test memory entries:
+
+```bash
+# Seed with predefined test people
+pnpm seed-memory
+
+# Or create memory entries from uploaded images
+pnpm seed-uploads
+```
+
+### Testing Face Recognition
+
+1. Navigate to the Memory Management page
+2. Switch to "Testing Mode" using the toggle buttons
+3. Upload an image of a face
+4. The system will show recognition results with confidence scores
+
+**Note**: In development mode (`pnpm dev`), the system uses consistent test embeddings that ensure the same image always produces the same embedding. This makes testing predictable and reliable.
+
 ## API Endpoints
 
 - `GET /api/images` - Fetch all images
@@ -124,12 +155,16 @@ The application will be available at `http://localhost:3000`.
 ### Available Scripts
 
 ```bash
-pnpm dev          # Start development server
+pnpm dev          # Start development server (with test embeddings enabled)
+pnpm dev:prod      # Start development server (production embeddings)
 pnpm build        # Build for production
 pnpm start        # Start production server
-pnpm test         # Run tests
-pnpm test:watch   # Run tests in watch mode
+pnpm test         # Run tests (with test embeddings enabled)
+pnpm test:watch   # Run tests in watch mode (with test embeddings enabled)
 pnpm typecheck    # TypeScript type checking
+pnpm seed-memory  # Seed database with test memory data for face recognition testing
+pnpm seed-uploads # Create memory entries from uploaded images
+pnpm clear-memory # Clear test memory data
 pnpm lint         # ESLint checking
 pnpm format       # Prettier formatting
 ```

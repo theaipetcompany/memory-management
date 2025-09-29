@@ -4,7 +4,7 @@ import { EMBEDDING_DIMENSION } from '@/types/memory';
 export interface EmbeddingResult {
   embedding?: number[];
   processingTime: number;
-  method: 'openai' | 'local';
+  method: 'openai' | 'local' | 'test';
   success: boolean;
   error?: string;
 }
@@ -24,6 +24,9 @@ export class OpenAIFaceEmbeddingService implements FaceEmbeddingService {
   private readonly MAX_PROCESSING_TIME = 400; // ms
   private readonly MAX_RETRIES = 3;
   private readonly RETRY_DELAY = 1000; // ms
+  private readonly TEST_MODE =
+    process.env.NODE_ENV === 'test' ||
+    process.env.ENABLE_TEST_EMBEDDINGS === 'true';
 
   constructor() {
     this.openai = new OpenAI({
@@ -44,6 +47,11 @@ export class OpenAIFaceEmbeddingService implements FaceEmbeddingService {
           success: false,
           error: validation.errors.join(', '),
         };
+      }
+
+      // In test mode, use consistent embeddings for better testing
+      if (this.TEST_MODE) {
+        return this.generateTestEmbedding(imageBuffer, startTime);
       }
 
       // Try OpenAI Vision API first (if available in future)
@@ -284,5 +292,90 @@ export class OpenAIFaceEmbeddingService implements FaceEmbeddingService {
     }
 
     return null;
+  }
+
+  private generateTestEmbedding(
+    imageBuffer: Buffer,
+    startTime: number
+  ): EmbeddingResult {
+    // Generate consistent embeddings for testing by using a simple hash-based approach
+    // This ensures the same image always produces the same embedding
+
+    // Create a simple hash from the first 1000 bytes
+    let hash = 0;
+    const sampleSize = Math.min(imageBuffer.length, 1000);
+
+    for (let i = 0; i < sampleSize; i++) {
+      hash = ((hash << 5) - hash + imageBuffer[i]) & 0xffffffff;
+    }
+
+    // Use the hash to create a consistent seed for pseudo-random generation
+    const seed = Math.abs(hash);
+
+    // Generate embedding using seeded pseudo-random values
+    const embedding = new Array(EMBEDDING_DIMENSION).fill(0).map((_, index) => {
+      // Use the hash and index to create deterministic but varied values
+      const pseudoRandom = this.seededRandom(seed + index);
+      return pseudoRandom * 2 - 1; // Values between -1 and 1
+    });
+
+    // Normalize the embedding to unit length
+    const normalizedEmbedding = this.normalizeVector(embedding);
+
+    const processingTime = Date.now() - startTime;
+
+    return {
+      embedding: normalizedEmbedding,
+      processingTime,
+      method: 'test',
+      success: true,
+    };
+  }
+
+  private seededRandom(seed: number): number {
+    // Simple Linear Congruential Generator for deterministic pseudo-randomness
+    const a = 1664525;
+    const c = 1013904223;
+    const m = Math.pow(2, 32);
+
+    seed = (a * seed + c) % m;
+    return seed / m; // Returns a value between 0 and 1
+  }
+
+  /**
+   * Generate a consistent test embedding for a given name/ID
+   * This is useful for creating test data with known embeddings
+   */
+  static generateConsistentTestEmbedding(identifier: string): number[] {
+    // Create a hash from the identifier string
+    let hash = 0;
+    for (let i = 0; i < identifier.length; i++) {
+      hash = ((hash << 5) - hash + identifier.charCodeAt(i)) & 0xffffffff;
+    }
+
+    const seed = Math.abs(hash);
+
+    // Generate embedding using seeded pseudo-random values
+    const embedding = new Array(EMBEDDING_DIMENSION).fill(0).map((_, index) => {
+      const pseudoRandom = this.seededRandomStatic(seed + index);
+      return pseudoRandom * 2 - 1; // Values between -1 and 1
+    });
+
+    // Normalize the embedding to unit length
+    const magnitude = Math.sqrt(
+      embedding.reduce((sum, val) => sum + val * val, 0)
+    );
+
+    return magnitude > 0 ? embedding.map((val) => val / magnitude) : embedding;
+  }
+
+  private static seededRandomStatic(seed: number): number {
+    // Simple Linear Congruential Generator for deterministic pseudo-randomness
+    const a = 1664525;
+    const c = 1013904223;
+    const m = Math.pow(2, 32);
+
+    seed = (a * seed + c) % m;
+    return seed / m; // Returns a value between 0 and 1
   }
 }

@@ -6,7 +6,8 @@
   "scripts": {
     "clean": "rimraf --glob **/node_modules **/dist **/.next **/.turbo **/database/**/generated *.bak && pnpm install",
     "compose": "docker compose -f ./docker/compose.dev.yaml --env-file .env",
-    "dev": "pnpm compose up -d && pnpm run watch",
+    "dev": "ENABLE_TEST_EMBEDDINGS=true pnpm compose up -d && pnpm run watch",
+    "dev:prod": "pnpm compose up -d && pnpm run watch",
     "watch": "trap 'pnpm compose stop; exit 0' SIGINT; prisma generate && next dev --turbopack",
     "build": "prisma generate && next build",
     "ui": "pnpm dlx shadcn@latest",
@@ -15,8 +16,11 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier . --write",
     "lint": "next lint",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "ENABLE_TEST_EMBEDDINGS=true jest",
+    "test:watch": "ENABLE_TEST_EMBEDDINGS=true jest --watch",
+    "seed-memory": "ENABLE_TEST_EMBEDDINGS=true tsx lib/test-data-seeder.ts seed",
+    "seed-uploads": "ENABLE_TEST_EMBEDDINGS=true tsx lib/test-data-seeder.ts seed-from-uploads",
+    "clear-memory": "ENABLE_TEST_EMBEDDINGS=true tsx lib/test-data-seeder.ts clear"
   },
   "dependencies": {
     "@prisma/adapter-pg": "6.14.0",
