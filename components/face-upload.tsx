@@ -14,7 +14,7 @@ interface DetectedFace {
 }
 
 interface FaceUploadProps {
-  onImageUpload: (file: File, name: string) => Promise<void>;
+  onImageUpload?: (file: File, name: string) => Promise<void>;
   onFaceDetected?: (faces: DetectedFace[]) => Promise<void>;
   onFaceLinked?: (name: string, faces: DetectedFace[]) => Promise<void>;
   onRecognitionTest?: (file: File) => Promise<any>;
@@ -186,7 +186,9 @@ export function FaceUpload({
     setUploadError(null);
 
     try {
-      await onImageUpload(selectedFile, personName.trim());
+      if (onImageUpload) {
+        await onImageUpload(selectedFile, personName.trim());
+      }
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : 'Upload failed');
     } finally {

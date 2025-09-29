@@ -245,26 +245,6 @@ export class OpenAIFaceEmbeddingService implements FaceEmbeddingService {
     };
   }
 
-  private async fallbackToLocalModel(
-    imageBuffer: Buffer,
-    startTime: number
-  ): Promise<EmbeddingResult> {
-    // For now, generate a mock embedding
-    // In a real implementation, this would use a local ML model
-    const mockEmbedding = new Array(EMBEDDING_DIMENSION).fill(0).map(
-      () => Math.random() * 2 - 1 // Random values between -1 and 1
-    );
-
-    const processingTime = Date.now() - startTime;
-
-    return {
-      embedding: mockEmbedding,
-      processingTime,
-      method: 'local',
-      success: true,
-    };
-  }
-
   private simpleHash(buffer: Buffer): number {
     let hash = 0;
     for (let i = 0; i < Math.min(buffer.length, 1000); i++) {

@@ -22,18 +22,26 @@ import {
 } from '@/types/memory';
 
 // Mock Prisma client
+const mockMemoryEntryCreate = jest.fn();
+const mockMemoryEntryFindUnique = jest.fn();
+const mockMemoryEntryFindMany = jest.fn();
+const mockMemoryEntryUpdate = jest.fn();
+const mockMemoryEntryDelete = jest.fn();
+const mockInteractionCreate = jest.fn();
+const mockInteractionFindMany = jest.fn();
+
 jest.mock('@/lib/prisma/client', () => {
   const mockPrisma = {
     memoryEntry: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
-      findMany: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
+      create: mockMemoryEntryCreate,
+      findUnique: mockMemoryEntryFindUnique,
+      findMany: mockMemoryEntryFindMany,
+      update: mockMemoryEntryUpdate,
+      delete: mockMemoryEntryDelete,
     },
     interaction: {
-      create: jest.fn(),
-      findMany: jest.fn(),
+      create: mockInteractionCreate,
+      findMany: mockInteractionFindMany,
     },
     $queryRaw: jest.fn(),
   };
@@ -87,8 +95,7 @@ describe('Memory Database Operations', () => {
         updatedAt: new Date('2024-01-01'),
       };
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.memoryEntry.create.mockResolvedValue(mockCreatedEntry);
+      mockMemoryEntryCreate.mockResolvedValue(mockCreatedEntry);
 
       const result = await createMemoryEntry(memoryData);
 
@@ -101,7 +108,7 @@ describe('Memory Database Operations', () => {
       expect(result.tags).toEqual(['friend', 'new_person']);
       expect(result.relationshipType).toBe('friend');
 
-      expect(mockPrisma.memoryEntry.create).toHaveBeenCalledWith({
+      expect(mockMemoryEntryCreate).toHaveBeenCalledWith({
         data: {
           name: 'Anna',
           embedding: JSON.stringify(memoryData.embedding),
@@ -170,8 +177,7 @@ describe('Memory Database Operations', () => {
         updatedAt: new Date('2024-01-01'),
       };
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.memoryEntry.create.mockResolvedValue(mockCreatedEntry);
+      mockMemoryEntryCreate.mockResolvedValue(mockCreatedEntry);
 
       const result = await createMemoryEntry(memoryData);
 
@@ -206,8 +212,7 @@ describe('Memory Database Operations', () => {
         },
       ];
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.memoryEntry.findMany.mockResolvedValue(mockMemories);
+      mockMemoryEntryFindMany.mockResolvedValue(mockMemories);
 
       const results = await findSimilarMemories(queryEmbedding, threshold);
 
@@ -222,8 +227,7 @@ describe('Memory Database Operations', () => {
       const queryEmbedding = new Array(EMBEDDING_DIMENSION).fill(0.9); // Very different embedding
       const threshold = 0.8;
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.memoryEntry.findMany.mockResolvedValue([]);
+      mockMemoryEntryFindMany.mockResolvedValue([]);
 
       const results = await findSimilarMemories(queryEmbedding, threshold);
 
@@ -234,13 +238,12 @@ describe('Memory Database Operations', () => {
       const queryEmbedding = new Array(EMBEDDING_DIMENSION).fill(0.1);
       const topK = 3;
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.memoryEntry.findMany.mockResolvedValue([]);
+      mockMemoryEntryFindMany.mockResolvedValue([]);
 
       await findSimilarMemories(queryEmbedding, 0.5, topK);
 
       // Verify the function was called with correct parameters
-      expect(mockPrisma.memoryEntry.findMany).toHaveBeenCalled();
+      expect(mockMemoryEntryFindMany).toHaveBeenCalled();
     });
 
     it('should validate embedding dimensions', async () => {
@@ -277,8 +280,7 @@ describe('Memory Database Operations', () => {
         updatedAt: new Date('2024-01-02'),
       };
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.memoryEntry.update.mockResolvedValue(mockUpdatedEntry);
+      mockMemoryEntryUpdate.mockResolvedValue(mockUpdatedEntry);
 
       const result = await updateMemoryEntry(memoryId, updates);
 
@@ -309,8 +311,7 @@ describe('Memory Database Operations', () => {
         updatedAt: new Date('2024-01-01'),
       };
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.memoryEntry.update.mockResolvedValue(mockUpdatedEntry);
+      mockMemoryEntryUpdate.mockResolvedValue(mockUpdatedEntry);
 
       const result = await updateMemoryEntry(memoryId, updates);
 
@@ -350,8 +351,7 @@ describe('Memory Database Operations', () => {
         updatedAt: new Date('2024-01-01'),
       };
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.memoryEntry.findUnique.mockResolvedValue(mockEntry);
+      mockMemoryEntryFindUnique.mockResolvedValue(mockEntry);
 
       const result = await getMemoryEntry(memoryId);
 
@@ -363,8 +363,7 @@ describe('Memory Database Operations', () => {
     it('should return null when memory entry not found', async () => {
       const memoryId = 'non-existent-id';
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.memoryEntry.findUnique.mockResolvedValue(null);
+      mockMemoryEntryFindUnique.mockResolvedValue(null);
 
       const result = await getMemoryEntry(memoryId);
 
@@ -407,15 +406,14 @@ describe('Memory Database Operations', () => {
         },
       ];
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.memoryEntry.findMany.mockResolvedValue(mockEntries);
+      mockMemoryEntryFindMany.mockResolvedValue(mockEntries);
 
       const results = await getAllMemoryEntries();
 
       expect(results).toHaveLength(2);
       expect(results[0].name).toBe('Anna');
       expect(results[1].name).toBe('Bob');
-      expect(mockPrisma.memoryEntry.findMany).toHaveBeenCalledWith({
+      expect(mockMemoryEntryFindMany).toHaveBeenCalledWith({
         orderBy: { lastSeen: 'desc' },
       });
     });
@@ -425,12 +423,11 @@ describe('Memory Database Operations', () => {
     it('should delete memory entry by ID', async () => {
       const memoryId = 'test-id-1';
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.memoryEntry.delete.mockResolvedValue({});
+      mockMemoryEntryDelete.mockResolvedValue({});
 
       await deleteMemoryEntry(memoryId);
 
-      expect(mockPrisma.memoryEntry.delete).toHaveBeenCalledWith({
+      expect(mockMemoryEntryDelete).toHaveBeenCalledWith({
         where: { id: memoryId },
       });
     });
@@ -458,8 +455,7 @@ describe('Memory Database Operations', () => {
         createdAt: new Date('2024-01-01'),
       };
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.interaction.create.mockResolvedValue(mockInteraction);
+      mockInteractionCreate.mockResolvedValue(mockInteraction);
 
       const result = await createInteraction(interactionData);
 
@@ -531,15 +527,14 @@ describe('Memory Database Operations', () => {
         },
       ];
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.interaction.findMany.mockResolvedValue(mockInteractions);
+      mockInteractionFindMany.mockResolvedValue(mockInteractions);
 
       const results = await getInteractionsByMemoryId(memoryEntryId);
 
       expect(results).toHaveLength(2);
       expect(results[0].id).toBe('interaction-id-1');
       expect(results[1].id).toBe('interaction-id-2');
-      expect(mockPrisma.interaction.findMany).toHaveBeenCalledWith({
+      expect(mockInteractionFindMany).toHaveBeenCalledWith({
         where: { memoryEntryId },
         orderBy: { createdAt: 'desc' },
       });
@@ -550,12 +545,11 @@ describe('Memory Database Operations', () => {
     it('should increment interaction count and update last_seen', async () => {
       const memoryEntryId = 'test-id-1';
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.memoryEntry.update.mockResolvedValue({});
+      mockMemoryEntryUpdate.mockResolvedValue({});
 
       await incrementInteractionCount(memoryEntryId);
 
-      expect(mockPrisma.memoryEntry.update).toHaveBeenCalledWith({
+      expect(mockMemoryEntryUpdate).toHaveBeenCalledWith({
         where: { id: memoryEntryId },
         data: {
           interactionCount: {
@@ -588,14 +582,13 @@ describe('Memory Database Operations', () => {
         },
       ];
 
-      const mockPrisma = getMockPrisma();
-      mockPrisma.memoryEntry.findMany.mockResolvedValue(mockEntries);
+      mockMemoryEntryFindMany.mockResolvedValue(mockEntries);
 
       const results = await searchMemoriesByName(searchName);
 
       expect(results).toHaveLength(1);
       expect(results[0].name).toBe('Anna');
-      expect(mockPrisma.memoryEntry.findMany).toHaveBeenCalledWith({
+      expect(mockMemoryEntryFindMany).toHaveBeenCalledWith({
         where: {
           name: {
             contains: searchName,
